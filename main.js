@@ -154,6 +154,9 @@ function setupAutoUpdate() {
   try {
     autoUpdater.autoDownload = true;
     autoUpdater.autoInstallOnAppQuit = true;
+    // Descargar SIEMPRE el instalador completo (evita el bug de ffmpeg.dll de las
+    // actualizaciones diferenciales, que a veces deja archivos incompletos).
+    autoUpdater.disableDifferentialDownload = true;
     const send = (status, info) => {
       try { if (win && !win.isDestroyed()) win.webContents.send('update-status', { status, info }); } catch (e) {}
     };
@@ -169,6 +172,7 @@ function setupAutoUpdate() {
   } catch (e) { /* nunca romper la app por el updater */ }
 }
 ipcMain.handle('update:install', () => { try { if (autoUpdater) autoUpdater.quitAndInstall(); } catch (e) {} });
+ipcMain.handle('update:check', () => { try { if (autoUpdater && app.isPackaged) autoUpdater.checkForUpdates().catch(() => {}); } catch (e) {} });
 ipcMain.handle('app:version', () => app.getVersion());
 
 // -------------------- Ciclo de vida --------------------

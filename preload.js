@@ -12,5 +12,6 @@ contextBridge.exposeInMainWorld('api', {
   paths:       ()            => ipcRenderer.invoke('app:paths'),
   version:     ()            => ipcRenderer.invoke('app:version'),
   onUpdateStatus: (cb)       => ipcRenderer.on('update-status', (e, d) => cb(d)),
-  updateInstall:  ()         => ipcRenderer.invoke('update:install')
+  updateInstall:  ()         => ipcRenderer.invoke('update:install'),
+  updateCheck:    ()         => ipcRenderer.invoke('update:check')
 });
