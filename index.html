@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MigraCRM PRO</title>
+<style>
+:root{
+  --bg:#0e1320; --bg2:#141b2d; --panel:#1a2338; --panel2:#212c46;
+  --line:#2a3654; --txt:#e7ecf6; --mut:#93a1c2; --mut2:#6c7a9c;
+  --gold:#d9b45b; --gold2:#f0d283; --blue:#4c8dff; --green:#37c98a;
+  --red:#ff6a6a; --amber:#f5b13d; --purple:#9d7bff;
+  --r:12px; --sh:0 8px 30px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--txt);overflow:hidden;height:100vh}
+button{font-family:inherit;cursor:pointer;border:none;outline:none}
+input,select,textarea{font-family:inherit}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#2c3a5c;border-radius:6px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ---------- Layout ---------- */
+#app{display:grid;grid-template-columns:230px 1fr;height:100vh}
+#side{background:linear-gradient(180deg,#121a2e,#0d1322);border-right:1px solid var(--line);display:flex;flex-direction:column}
+.brand{padding:18px 16px 14px;border-bottom:1px solid var(--line);text-align:center}
+.brand .logo-wrap{width:74px;height:74px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center}
+.brand .logo-wrap img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px}
+.brand .logo-wrap svg{width:70px;height:70px}
+.brand h1{font-size:19px;letter-spacing:.5px}
+.brand h1 b{color:var(--gold)}
+.brand span{font-size:9.5px;color:var(--mut2);letter-spacing:1.5px}
+/* Membrete para impresion / PDF */
+#letterhead{display:none}
+.lh{display:flex;align-items:center;gap:16px;border-bottom:3px solid var(--gold);padding-bottom:14px;margin-bottom:18px}
+.lh .lh-logo{width:74px;height:74px;flex:0 0 auto;display:flex;align-items:center;justify-content:center}
+.lh .lh-logo img{max-width:100%;max-height:100%;object-fit:contain}
+.lh .lh-logo svg{width:72px;height:72px}
+.lh h2{font-size:22px;margin:0;color:var(--gold)}
+.lh .lh-sub{font-size:12px;color:var(--mut)}
+.lh .lh-meta{margin-left:auto;text-align:right;font-size:11px;color:var(--mut)}
+.nav{flex:1;padding:10px 8px;overflow-y:auto}
+.nav button{display:flex;align-items:center;gap:11px;width:100%;padding:11px 12px;background:transparent;color:var(--mut);border-radius:10px;font-size:14px;margin-bottom:3px;transition:.15s;text-align:left}
+.nav button:hover{background:var(--panel);color:var(--txt)}
+.nav button.on{background:linear-gradient(90deg,rgba(217,180,91,.18),transparent);color:var(--gold2);font-weight:600}
+.nav .ico{width:20px;text-align:center;font-size:16px}
+.nav .badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px}
+.sidefoot{padding:12px;border-top:1px solid var(--line);font-size:11px;color:var(--mut2)}
+.savedot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:6px;vertical-align:middle}
+
+#main{display:flex;flex-direction:column;overflow:hidden}
+#top{display:flex;align-items:center;gap:14px;padding:14px 22px;border-bottom:1px solid var(--line);background:var(--bg2)}
+#top h2{font-size:20px;font-weight:600}
+#top .sub{color:var(--mut2);font-size:12px}
+#top .grow{flex:1}
+.search{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:9px 12px;color:var(--txt);width:240px;font-size:13px}
+#view{flex:1;overflow-y:auto;padding:22px}
+
+/* ---------- Botones ---------- */
+.btn{padding:9px 15px;border-radius:9px;font-size:13px;font-weight:600;background:var(--panel);color:var(--txt);border:1px solid var(--line);display:inline-flex;align-items:center;gap:7px;transition:.15s}
+.btn:hover{border-color:var(--gold);color:var(--gold2)}
+.btn.gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#241c05;border:none}
+.btn.gold:hover{filter:brightness(1.08);color:#241c05}
+.btn.green{background:var(--green);color:#062018;border:none}
+.btn.wa{background:#25d366;color:#04240f;border:none}
+.btn.red{background:transparent;border-color:#5a2b30;color:var(--red)}
+.btn.sm{padding:6px 10px;font-size:12px}
+.btn.ghost{background:transparent}
+
+/* ---------- Tarjetas / KPIs ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;position:relative;overflow:hidden}
+.kpi .k{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
+.kpi .v{font-size:30px;font-weight:700;margin-top:6px}
+.kpi .d{font-size:11px;color:var(--mut2);margin-top:2px}
+.kpi::after{content:'';position:absolute;right:-20px;top:-20px;width:80px;height:80px;border-radius:50%;background:var(--accent,var(--gold));opacity:.08}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:18px}
+.card h3{font-size:15px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card h3 .grow{flex:1}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:1150px){.grid2{grid-template-columns:1fr}}
+
+/* ---------- Tabla ---------- */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:var(--mut);font-weight:600;padding:9px 12px;border-bottom:1px solid var(--line);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+td{padding:10px 12px;border-bottom:1px solid #202a42}
+tr:hover td{background:rgba(255,255,255,.02)}
+.tbl-actions{display:flex;gap:6px}
+.iconbtn{background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:5px 8px;font-size:13px;color:var(--mut)}
+.iconbtn:hover{color:var(--gold2);border-color:var(--gold)}
+
+/* ---------- Etiquetas ---------- */
+.tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.t-green{background:rgba(55,201,138,.15);color:var(--green)}
+.t-red{background:rgba(255,106,106,.15);color:var(--red)}
+.t-amber{background:rgba(245,177,61,.15);color:var(--amber)}
+.t-blue{background:rgba(76,141,255,.15);color:var(--blue)}
+.t-gray{background:rgba(140,155,190,.15);color:var(--mut)}
+.t-purple{background:rgba(157,123,255,.15);color:var(--purple)}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px}
+
+/* ---------- Barra de herramientas de Casos ---------- */
+.toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.seg{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.seg button{padding:8px 15px;background:transparent;color:var(--mut);font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px}
+.seg button.on{background:var(--panel2);color:var(--gold2)}
+.fchips{display:flex;gap:6px;flex-wrap:wrap}
+.fchip{padding:7px 13px;border-radius:20px;font-size:12px;font-weight:600;background:var(--panel);border:1px solid var(--line);color:var(--mut);cursor:pointer;transition:.12s}
+.fchip:hover{color:var(--txt)}
+.fchip.on{border-color:var(--gold);color:var(--gold2);background:rgba(217,180,91,.12)}
+.fchip .n{opacity:.65;margin-left:5px;font-weight:700}
+.estado-sel{border:1px solid var(--line);border-left-width:4px;border-radius:8px;padding:7px 9px;background:var(--panel);color:var(--txt);font-size:12px;font-weight:700;cursor:pointer;min-width:130px}
+.estado-sel:hover{border-color:var(--gold)}
+.pbar{height:7px;width:74px;background:#26314d;border-radius:4px;overflow:hidden;display:inline-block;vertical-align:middle}
+.pbar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2))}
+.casos-table td{padding:12px}
+.casos-table tr:hover td{background:rgba(217,180,91,.04)}
+
+/* ---------- Kanban ---------- */
+.kan{display:flex;gap:14px;overflow-x:auto;padding-bottom:10px;min-height:60vh}
+.col{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);width:270px;min-width:270px;display:flex;flex-direction:column}
+.col.drop{border-color:var(--gold);box-shadow:0 0 0 2px rgba(217,180,91,.25) inset}
+.col-h{padding:12px 14px;border-bottom:1px solid var(--line);font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px}
+.col-h .n{margin-left:auto;background:var(--panel2);padding:1px 9px;border-radius:20px;font-size:11px;color:var(--mut)}
+.col-b{padding:10px;flex:1;overflow-y:auto;min-height:80px}
+.kc{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;cursor:grab;transition:.12s}
+.kc:hover{border-color:var(--gold);transform:translateY(-2px)}
+.kc.drag{opacity:.4}
+.kc .nm{font-weight:600;font-size:13px}
+.kc .ty{font-size:11px;color:var(--mut);margin:4px 0 8px}
+.kc .ft{display:flex;align-items:center;gap:6px;font-size:11px}
+.kc .bar{height:5px;background:#26314d;border-radius:4px;overflow:hidden;margin-top:8px}
+.kc .bar i{display:block;height:100%;background:var(--gold)}
+
+/* ---------- Modal ---------- */
+.overlay{position:fixed;inset:0;background:rgba(4,8,16,.72);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:100}
+.overlay.on{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--line);border-radius:16px;width:640px;max-width:94vw;max-height:92vh;overflow-y:auto;box-shadow:var(--sh)}
+.modal.wide{width:900px}
+.mh{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;position:sticky;top:0;background:var(--bg2);z-index:2}
+.mh h3{font-size:17px;flex:1}
+.mh .x{background:var(--panel);border-radius:8px;padding:6px 11px;color:var(--mut);font-size:16px}
+.mb{padding:22px}
+.mf{padding:16px 22px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;position:sticky;bottom:0;background:var(--bg2)}
+.fg{margin-bottom:15px}
+.fg label{display:block;font-size:12px;color:var(--mut);margin-bottom:6px;font-weight:600}
+.fg input,.fg select,.fg textarea{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:10px 12px;color:var(--txt);font-size:14px}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--gold)}
+.fg textarea{resize:vertical;min-height:70px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.frow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+
+/* ---------- Semaforo / progreso ---------- */
+.sem{display:flex;align-items:center;gap:8px}
+.pill-days{font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px}
+.empty{text-align:center;color:var(--mut2);padding:50px 20px}
+.empty .big{font-size:44px;opacity:.5}
+.hint{font-size:12px;color:var(--mut2);margin-top:4px}
+.docrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #202a42}
+.docrow .g{flex:1}
+.chk{width:20px;height:20px;border-radius:6px;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px}
+.chk.ok{background:var(--green);border-color:var(--green);color:#04240f}
+.progress{height:8px;background:#26314d;border-radius:5px;overflow:hidden}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2))}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.wa-menu{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--gold);color:var(--txt);padding:12px 22px;border-radius:10px;box-shadow:var(--sh);z-index:200;opacity:0;transition:.3s;font-size:13px}
+.toast.on{opacity:1}
+#upd-banner{position:fixed;top:14px;right:14px;max-width:340px;background:linear-gradient(135deg,#1a2338,#212c46);border:1px solid var(--gold);border-radius:12px;padding:14px 16px;box-shadow:var(--sh);z-index:300;display:none;font-size:13px}
+#upd-banner.on{display:block}
+#upd-banner b{color:var(--gold2)}
+#upd-banner .row{display:flex;align-items:center;gap:10px;margin-top:10px}
+#upd-banner .pbar2{flex:1;height:7px;background:#26314d;border-radius:5px;overflow:hidden}
+#upd-banner .pbar2 i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));width:0}
+.mini{font-size:11px;color:var(--mut2)}
+@media print{ #side,#top,.mf,.noprint{display:none!important} #app{display:block} #view{overflow:visible;padding:0} body{background:#fff;color:#000} .card{border:1px solid #ccc}
+  #letterhead{display:block!important;padding:16px} .lh h2{color:#16365c} .lh .lh-sub,.lh .lh-meta{color:#444} .lh{border-color:#16365c} }
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- SIDEBAR -->
+  <aside id="side">
+    <div class="brand">
+      <div class="logo-wrap" id="brandLogoWrap"></div>
+      <h1>M.G.L.<b>&amp;M</b></h1>
+      <span>MG LEGAL &amp; MIGRATION</span>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="sidefoot">
+      <div><span class="savedot" id="savedot"></span><span id="savetxt">Guardado</span></div>
+      <div style="margin-top:6px" id="footinfo"></div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div id="main">
+    <header id="top">
+      <div>
+        <h2 id="ttl">Panel</h2>
+        <div class="sub" id="tsub"></div>
+      </div>
+      <div class="grow"></div>
+      <input class="search" id="search" placeholder="🔎 Buscar cliente, caso, expediente…">
+      <button class="btn gold" id="topAdd">+ Nuevo</button>
+    </header>
+    <div id="letterhead"></div>
+    <div id="view"></div>
+  </div>
+</div>
+
+<div class="overlay" id="ov"><div class="modal" id="mod"></div></div>
+<div class="toast" id="toast"></div>
+<div id="upd-banner"></div>
+
+<script>
+// ============================================================================
+//  MigraCRM PRO — Lógica de la aplicación
+// ============================================================================
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+// Respaldo: si se abre fuera de Electron (navegador), usar localStorage para no quedar inutilizable.
+if (!window.api) {
+  window.api = {
+    loadDB:      () => localStorage.getItem('migracrm') ,
+    saveDB:      (c) => { localStorage.setItem('migracrm', c); return { ok:true }; },
+    attachFile:  () => { alert('Adjuntar archivos solo está disponible en la app de escritorio.'); return null; },
+    openFile:    () => {},
+    sendWhatsApp:(phone, text) => window.open('https://wa.me/' + String(phone||'').replace(/[^\d]/g,'') + '?text=' + encodeURIComponent(text||''), '_blank'),
+    exportSave:  (name, content) => { const b=new Blob([content],{type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name; a.click(); return name; },
+    openBackups: () => alert('La carpeta de respaldos está disponible en la app de escritorio.'),
+    paths:       () => ({ data:'(navegador)', backups:'(navegador)', adjuntos:'(navegador)' }),
+    version:     () => '1.0.0',
+    onUpdateStatus: () => {},
+    updateInstall:  () => {}
+  };
+}
+
+// -------- Catálogo de trámites + checklist dinámico --------
+const TRAMITES = {
+  'Visa de Turismo':        ['Pasaporte vigente','Foto tamaño visa','Formulario de solicitud','Estados de cuenta (3 meses)','Carta de trabajo','Reserva de vuelo/hotel','Carta de invitación'],
+  'Visa de Trabajo':        ['Pasaporte vigente','Foto tamaño visa','Oferta/Contrato de trabajo','Petición del empleador','Título / certificaciones','Antecedentes penales','Examen médico','Comprobante de tasas'],
+  'Visa de Estudiante':     ['Pasaporte vigente','Foto tamaño visa','Carta de aceptación','Comprobante de pago de matrícula','Prueba de fondos','Antecedentes penales','Seguro médico'],
+  'Residencia':             ['Pasaporte vigente','Acta de nacimiento apostillada','Antecedentes penales apostillados','Examen médico','Prueba de sustento económico','Fotos','Formulario oficial','Comprobante de tasas'],
+  'Reunificación Familiar': ['Pasaporte del solicitante','Documento del familiar patrocinador','Acta de matrimonio/nacimiento','Prueba de vínculo','Prueba de ingresos del patrocinador','Fotos','Formulario oficial'],
+  'Ciudadanía / Naturalización':['Tarjeta de residencia','Pasaporte','Prueba de tiempo de residencia','Antecedentes penales','Examen cívico/idioma','Fotos','Comprobante de tasas'],
+  'Renovación de estatus':  ['Documento actual a renovar','Pasaporte vigente','Formulario de renovación','Fotos recientes','Comprobante de tasas'],
+  'Asilo / Refugio':        ['Pasaporte / identificación','Declaración de los hechos','Evidencia de persecución','Antecedentes','Fotos','Formulario oficial'],
+  'Otro trámite':           ['Pasaporte vigente','Foto','Formulario','Comprobante de tasas']
+};
+const ESTADOS = [
+  {k:'Consulta',    c:'--purple'},
+  {k:'Documentos',  c:'--blue'},
+  {k:'Formularios', c:'--amber'},
+  {k:'Enviado',     c:'--gold'},
+  {k:'En revisión', c:'--blue'},
+  {k:'Aprobado',    c:'--green'},
+  {k:'Rechazado',   c:'--red'}
+];
+const FUENTES = ['Instagram','Facebook','WhatsApp','Referido','Google','TikTok','Anuncio','Otro'];
+
+// Emblema por defecto (avión + balanza de la justicia + olas), inspirado en el logo de la marca.
+const DEFAULT_LOGO_SVG = `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <defs><clipPath id="cir"><circle cx="60" cy="60" r="40"/></clipPath></defs>
+  <path d="M60 16 a44 44 0 1 0 34 16" fill="none" stroke="#16365c" stroke-width="7" stroke-linecap="round"/>
+  <g transform="translate(80,18) rotate(35)" fill="#16365c">
+    <path d="M0 6 L18 3 L21 0 L23 3 L41 6 L23 9 L21 15 L18 9 Z"/>
+  </g>
+  <g clip-path="url(#cir)">
+    <path d="M18 84 Q46 62 74 80 T112 74 L112 102 L18 102 Z" fill="#8cc63f"/>
+    <path d="M14 90 Q42 78 68 88 T114 86 L114 102 L14 102 Z" fill="#27a9e1"/>
+    <g fill="#16365c" transform="translate(60,42)">
+      <circle cx="0" cy="0" r="4"/><rect x="-1.4" y="3" width="2.8" height="30"/>
+      <rect x="-17" y="9" width="34" height="2"/>
+      <path d="M-17 11 l-4.5 8 h9 z"/><path d="M17 11 l-4.5 8 h9 z"/>
+    </g>
+  </g>
+</svg>`;
+function logoHTML(){ const d=DB&&DB.meta&&DB.meta.asesor&&DB.meta.asesor.logoData; return d?`<img src="${d}" alt="logo">`:DEFAULT_LOGO_SVG; }
+function paintBrand(){
+  const w=$('#brandLogoWrap'); if(w)w.innerHTML=logoHTML();
+  const a=(DB&&DB.meta&&DB.meta.asesor)||{};
+  const c=(DB&&DB.meta&&DB.meta.config)||{};
+  const contacto=[a.telefono&&('Tel: '+a.telefono),a.correo,c.pais].filter(Boolean).join(' · ');
+  const lh=$('#letterhead');
+  if(lh)lh.innerHTML=`<div class="lh"><div class="lh-logo">${logoHTML()}</div>
+    <div><h2>${esc(a.oficina||'MG Legal & Migration')}</h2><div class="lh-sub">Asesoría legal y migratoria${a.nombre?' · '+esc(a.nombre):''}</div></div>
+    <div class="lh-meta">${esc(contacto)}<br>${new Date().toLocaleDateString('es-DO')}</div></div>`;
+}
+
+// -------- Estado / Base de datos --------
+let DB = null;
+let currentTab = 'dash';
+let searchQ = '';
+let casosView = 'lista';      // 'lista' | 'tablero'
+let casosFiltroEstado = '';   // '' = todos
+
+function blankDB(){
+  return {
+    meta:{ version:'1.0', asesor:{nombre:'',oficina:'MG Legal & Migration',telefono:'',correo:'',logoData:''},
+           config:{pais:'República Dominicana', moneda:'RD$', itbis:18} },
+    clientes:[], casos:[], pagos:[], leads:[], citas:[], bitacora:[]
+  };
+}
+
+async function boot(){
+  try{
+    const raw = await window.api.loadDB();
+    DB = raw ? JSON.parse(raw) : blankDB();
+  }catch(e){ DB = blankDB(); }
+  // asegurar arreglos
+  ['clientes','casos','pagos','leads','citas','bitacora'].forEach(k=>{ if(!Array.isArray(DB[k])) DB[k]=[]; });
+  if(!DB.meta) DB.meta = blankDB().meta;
+  const p = await window.api.paths();
+  $('#footinfo').innerHTML = 'BD local segura<br>'+esc(DB.meta.config.pais||'');
+  paintBrand(); buildNav(); render();
+}
+
+// -------- Guardado con autoguardado (debounce) --------
+let saveTimer=null;
+function save(){
+  $('#savedot').style.background='var(--amber)'; $('#savetxt').textContent='Guardando…';
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(async()=>{
+    const r = await window.api.saveDB(JSON.stringify(DB));
+    if(r && r.ok){ $('#savedot').style.background='var(--green)'; $('#savetxt').textContent='Guardado'; }
+    else { $('#savedot').style.background='var(--red)'; $('#savetxt').textContent='Error'; }
+  },350);
+}
+
+// -------- Utilidades --------
+const money = n => (DB.meta.config.moneda||'$')+' '+(Number(n)||0).toLocaleString('es-DO',{minimumFractionDigits:2,maximumFractionDigits:2});
+const today = () => new Date().toISOString().slice(0,10);
+function daysTo(dateStr){ if(!dateStr) return null; const d=new Date(dateStr+'T00:00:00'); const t=new Date(today()+'T00:00:00'); return Math.round((d-t)/86400000); }
+function semColor(days){ if(days===null) return '--mut'; if(days<0) return '--red'; if(days<=7) return '--red'; if(days<=30) return '--amber'; return '--green'; }
+function semText(days){ if(days===null) return '—'; if(days<0) return 'Vencido '+Math.abs(days)+'d'; if(days===0) return 'HOY'; return 'En '+days+'d'; }
+const clienteName = id => (DB.clientes.find(c=>c.id===id)||{}).nombre || 'Sin cliente';
+const clientePhone = id => (DB.clientes.find(c=>c.id===id)||{}).telefono || '';
+function casoProgress(caso){ const d=caso.docs||[]; if(!d.length) return 0; return Math.round(d.filter(x=>x.estado==='Recibido'||x.estado==='Verificado').length/d.length*100); }
+
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('on'); setTimeout(()=>t.classList.remove('on'),2200); }
+
+// ============================================================================
+//  NAVEGACIÓN
+// ============================================================================
+const TABS = [
+  {k:'dash',   i:'📊', t:'Panel'},
+  {k:'casos',  i:'🗂️', t:'Casos'},
+  {k:'clientes',i:'👤', t:'Clientes'},
+  {k:'venc',   i:'⏰', t:'Vencimientos'},
+  {k:'fin',    i:'💰', t:'Finanzas'},
+  {k:'leads',  i:'🎯', t:'Leads / CRM'},
+  {k:'citas',  i:'📅', t:'Citas'},
+  {k:'rep',    i:'📈', t:'Reportes'},
+  {k:'cfg',    i:'⚙️', t:'Configuración'}
+];
+function buildNav(){
+  $('#nav').innerHTML = TABS.map(t=>`<button data-k="${t.k}" class="${t.k===currentTab?'on':''}">
+    <span class="ico">${t.i}</span><span>${t.t}</span><span class="badge" id="bdg-${t.k}" style="display:none"></span></button>`).join('');
+  $('#nav').querySelectorAll('button').forEach(b=>b.onclick=()=>{ currentTab=b.dataset.k; buildNav(); render(); });
+  updateBadges();
+}
+function updateBadges(){
+  const venc = allVencimientos().filter(v=>v.days!==null && v.days<=7).length;
+  const b=$('#bdg-venc'); if(b){ if(venc){b.style.display='';b.textContent=venc;} else b.style.display='none'; }
+  const leadN = DB.leads.filter(l=>l.estado!=='Contratado'&&l.estado!=='Descartado').length;
+  const bl=$('#bdg-leads'); if(bl){ if(leadN){bl.style.display='';bl.textContent=leadN;} else bl.style.display='none'; }
+}
+
+// ============================================================================
+//  RENDER PRINCIPAL
+// ============================================================================
+function render(){
+  const tab = TABS.find(t=>t.k===currentTab);
+  $('#ttl').textContent = tab.t;
+  const map = {dash:renderDash,casos:renderCasos,clientes:renderClientes,venc:renderVenc,fin:renderFin,leads:renderLeads,citas:renderCitas,rep:renderRep,cfg:renderCfg};
+  $('#tsub').textContent = subFor(currentTab);
+  $('#view').innerHTML = map[currentTab]();
+  wire();
+  updateBadges();
+  // botón "+ Nuevo" contextual
+  const add=$('#topAdd');
+  const addMap={dash:()=>openCaso(),casos:()=>openCaso(),clientes:()=>openCliente(),venc:()=>openCaso(),fin:()=>openPago(),leads:()=>openLead(),citas:()=>openCita(),rep:null,cfg:null};
+  if(addMap[currentTab]){ add.style.display=''; add.onclick=addMap[currentTab]; add.textContent = currentTab==='clientes'?'+ Cliente':currentTab==='fin'?'+ Pago':currentTab==='leads'?'+ Lead':currentTab==='citas'?'+ Cita':'+ Nuevo caso'; }
+  else add.style.display='none';
+}
+function subFor(k){
+  if(k==='casos') return DB.casos.length+' casos registrados';
+  if(k==='clientes') return DB.clientes.length+' clientes';
+  if(k==='leads') return DB.leads.length+' prospectos';
+  return DB.meta.asesor.nombre ? 'Asesor: '+DB.meta.asesor.nombre : 'Configura tu perfil en ⚙️';
+}
+
+// ---------------- DASHBOARD ----------------
+function renderDash(){
+  const activos = DB.casos.filter(c=>c.estado!=='Aprobado'&&c.estado!=='Rechazado');
+  const aprob = DB.casos.filter(c=>c.estado==='Aprobado').length;
+  const rech = DB.casos.filter(c=>c.estado==='Rechazado').length;
+  const tasa = (aprob+rech)>0? Math.round(aprob/(aprob+rech)*100):0;
+  const venc7 = allVencimientos().filter(v=>v.days!==null && v.days<=7).length;
+  const docsPend = DB.casos.reduce((a,c)=>a+(c.docs||[]).filter(d=>d.estado==='Pendiente').length,0);
+  const porCobrar = DB.pagos.filter(p=>p.estado==='Pendiente').reduce((a,p)=>a+Number(p.monto||0),0);
+  const cobrado = DB.pagos.filter(p=>p.estado==='Pagado').reduce((a,p)=>a+Number(p.monto||0),0);
+
+  // por tipo
+  const tipos={}; DB.casos.forEach(c=>tipos[c.tipo]=(tipos[c.tipo]||0)+1);
+  const maxT=Math.max(1,...Object.values(tipos));
+
+  const proximos = allVencimientos().filter(v=>v.days!==null).sort((a,b)=>a.days-b.days).slice(0,7);
+
+  return `
+  <div class="kpis">
+    <div class="kpi" style="--accent:var(--blue)"><div class="k">Casos activos</div><div class="v">${activos.length}</div><div class="d">${DB.casos.length} en total</div></div>
+    <div class="kpi" style="--accent:var(--green)"><div class="k">Tasa de éxito</div><div class="v">${tasa}%</div><div class="d">${aprob} aprobados · ${rech} rechazados</div></div>
+    <div class="kpi" style="--accent:var(--red)"><div class="k">Vencen en 7 días</div><div class="v" style="color:${venc7?'var(--red)':'inherit'}">${venc7}</div><div class="d">requieren acción</div></div>
+    <div class="kpi" style="--accent:var(--amber)"><div class="k">Docs pendientes</div><div class="v">${docsPend}</div><div class="d">por recolectar</div></div>
+    <div class="kpi" style="--accent:var(--gold)"><div class="k">Por cobrar</div><div class="v" style="font-size:23px">${money(porCobrar)}</div><div class="d">cobrado: ${money(cobrado)}</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h3>⏰ Próximos vencimientos <span class="grow"></span><button class="btn sm ghost" onclick="currentTab='venc';buildNav();render()">Ver todos</button></h3>
+      ${proximos.length? `<table><tbody>${proximos.map(v=>`<tr>
+        <td><span class="dot" style="background:var(${semColor(v.days)})"></span>${esc(v.cliente)}</td>
+        <td class="mini">${esc(v.tipo)}</td>
+        <td><span class="pill-days" style="background:rgba(255,255,255,.06);color:var(${semColor(v.days)})">${semText(v.days)}</span></td>
+        <td class="mini">${esc(v.label)}</td>
+        <td><button class="btn wa sm" onclick="waVenc('${v.casoId}','${v.kind}')">WhatsApp</button></td>
+      </tr>`).join('')}</tbody></table>` : `<div class="empty"><div class="big">✓</div>Sin vencimientos próximos</div>`}
+    </div>
+    <div class="card">
+      <h3>🗂️ Casos por tipo de trámite</h3>
+      ${Object.keys(tipos).length? Object.entries(tipos).sort((a,b)=>b[1]-a[1]).map(([t,n])=>`
+        <div style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>${esc(t)}</span><b>${n}</b></div>
+          <div class="progress"><i style="width:${n/maxT*100}%"></i></div>
+        </div>`).join('') : `<div class="empty"><div class="big">🗂️</div>Aún no hay casos. Crea el primero.</div>`}
+      <div style="margin-top:16px;display:flex;gap:14px">
+        <div><div class="mini">Pipeline</div>${ESTADOS.map(e=>{const n=DB.casos.filter(c=>c.estado===e.k).length;return n?`<span class="tag" style="background:rgba(255,255,255,.05);color:var(${e.c});margin:2px">${e.k}: ${n}</span>`:''}).join('')}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ---------------- CASOS (Kanban) ----------------
+function estadoColor(k){ const e=ESTADOS.find(x=>x.k===k); return e?e.c:'--mut'; }
+function estadoSelect(c){
+  return `<select class="estado-sel" style="border-left-color:var(${estadoColor(c.estado)})"
+    onclick="event.stopPropagation()" onchange="event.stopPropagation();setCasoEstado('${c.id}',this.value)">
+    ${ESTADOS.map(e=>`<option ${c.estado===e.k?'selected':''}>${e.k}</option>`).join('')}</select>`;
+}
+function setCasoEstado(id,v){ const c=DB.casos.find(x=>x.id===id); if(!c)return; c.estado=v;
+  if(v==='Aprobado'||v==='Rechazado')c.cerrado=today(); else delete c.cerrado; save();render();toast('Etapa: '+v); }
+function setCasoFiltro(k){ casosFiltroEstado=k; render(); }
+function setCasosView(v){ casosView=v; render(); }
+
+function casosToolbar(list){
+  const chip=(k,label,n)=>`<div class="fchip ${casosFiltroEstado===k?'on':''}" onclick="setCasoFiltro('${k}')">${label}<span class="n">${n}</span></div>`;
+  const chips=[chip('','Todos',DB.casos.length)].concat(ESTADOS.map(e=>chip(e.k,e.k,DB.casos.filter(c=>c.estado===e.k).length)));
+  return `<div class="toolbar">
+    <div class="seg">
+      <button class="${casosView==='lista'?'on':''}" onclick="setCasosView('lista')">📋 Lista</button>
+      <button class="${casosView==='tablero'?'on':''}" onclick="setCasosView('tablero')">🗂️ Tablero</button>
+    </div>
+    <div class="fchips">${chips.join('')}</div>
+  </div>`;
+}
+
+function renderCasos(){
+  const q=searchQ.toLowerCase();
+  let list=DB.casos.filter(c=> !q || clienteName(c.clienteId).toLowerCase().includes(q) || (c.tipo||'').toLowerCase().includes(q) || (c.expediente||'').toLowerCase().includes(q));
+  if(casosFiltroEstado) list=list.filter(c=>c.estado===casosFiltroEstado);
+  const bar=casosToolbar(list);
+  if(!DB.casos.length) return bar+emptyState('🗂️','Sin casos','Crea tu primer caso con el botón “+ Nuevo caso”. Se generará solo el checklist de documentos.');
+  return bar + (casosView==='tablero' ? boardView(list) : listView(list));
+}
+
+function listView(list){
+  if(!list.length) return `<div class="card"><div class="empty"><div class="big">🔎</div>No hay casos en este filtro.</div></div>`;
+  list=[...list].sort((a,b)=>{const da=a.fechaLimite||a.fechaCita||'9999',db=b.fechaLimite||b.fechaCita||'9999';return da.localeCompare(db);});
+  return `<div class="card" style="padding:6px 0"><table class="casos-table"><thead><tr>
+    <th style="padding-left:18px">Cliente</th><th>Trámite</th><th>Expediente</th><th>Etapa</th><th>Documentos</th><th>Próxima fecha</th><th style="text-align:right;padding-right:18px">Acciones</th>
+  </tr></thead><tbody>
+  ${list.map(c=>{
+    const p=casoProgress(c);
+    const dl = c.fechaLimite!=null&&c.fechaLimite!==''? daysTo(c.fechaLimite) : (c.fechaCita? daysTo(c.fechaCita):null);
+    const lbl = c.fechaLimite? 'Límite' : (c.fechaCita?'Cita':'');
+    const tel=clientePhone(c.clienteId);
+    return `<tr onclick="openCasoDetail('${c.id}')" style="cursor:pointer">
+      <td style="padding-left:18px"><b>${esc(clienteName(c.clienteId))}</b><br><span class="mini">${esc(c.prioridad||'Normal')} · creado ${esc(c.creado||'')}</span></td>
+      <td>${esc(c.tipo)}<br><span class="mini">${esc(c.destino||'—')}</span></td>
+      <td class="mini">${c.expediente?'#'+esc(c.expediente):'—'}</td>
+      <td>${estadoSelect(c)}</td>
+      <td><span class="pbar"><i style="width:${p}%"></i></span> <span class="mini">${p}%</span></td>
+      <td>${dl!==null?`<span class="pill-days" style="background:rgba(255,255,255,.06);color:var(${semColor(dl)})">${semText(dl)}</span> <span class="mini">${lbl}</span>`:'<span class="mini">—</span>'}</td>
+      <td class="tbl-actions" style="justify-content:flex-end;padding-right:18px" onclick="event.stopPropagation()">
+        <button class="iconbtn" onclick="openCasoDetail('${c.id}')" title="Abrir">📂</button>
+        ${tel?`<button class="iconbtn" onclick="waEstado('${c.id}')" title="WhatsApp estado">💬</button>`:''}
+        <button class="iconbtn" onclick="event.stopPropagation();openCaso('${c.id}')" title="Editar">✏️</button>
+      </td></tr>`;
+  }).join('')}
+  </tbody></table></div>`;
+}
+
+function boardView(list){
+  return `<div class="kan">${ESTADOS.map(e=>{
+    const items=list.filter(c=>c.estado===e.k);
+    return `<div class="col" data-est="${e.k}">
+      <div class="col-h"><span class="dot" style="background:var(${e.c})"></span>${e.k}<span class="n">${items.length}</span></div>
+      <div class="col-b" data-est="${e.k}">${items.map(c=>kanCard(c)).join('')||'<div class="mini" style="text-align:center;padding:16px;opacity:.5">—</div>'}</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+function kanCard(c){
+  const dl=daysTo(c.fechaLimite); const p=casoProgress(c);
+  return `<div class="kc" draggable="true" data-id="${c.id}" onclick="openCasoDetail('${c.id}')">
+    <div class="nm">${esc(clienteName(c.clienteId))}</div>
+    <div class="ty">${esc(c.tipo)} · ${esc(c.destino||'')}</div>
+    <div class="ft">
+      ${c.expediente?`<span class="tag t-gray">#${esc(c.expediente)}</span>`:''}
+      ${dl!==null?`<span class="pill-days" style="background:rgba(255,255,255,.06);color:var(${semColor(dl)})">${semText(dl)}</span>`:''}
+    </div>
+    <div class="bar"><i style="width:${p}%"></i></div>
+    <div class="mini" style="margin:6px 0 8px">Docs ${p}%</div>
+    ${estadoSelect(c)}
+  </div>`;
+}
+
+// ---------------- CLIENTES ----------------
+function renderClientes(){
+  const q=searchQ.toLowerCase();
+  const list=DB.clientes.filter(c=>!q||c.nombre.toLowerCase().includes(q)||(c.telefono||'').includes(q));
+  if(!list.length) return emptyState('👤','Sin clientes','Agrega tu primer cliente para empezar a gestionar casos.');
+  return `<div class="card"><table><thead><tr><th>Cliente</th><th>Teléfono</th><th>País origen</th><th>Casos</th><th>Acciones</th></tr></thead><tbody>
+  ${list.map(c=>{const nc=DB.casos.filter(x=>x.clienteId===c.id).length;return `<tr>
+    <td><b>${esc(c.nombre)}</b><br><span class="mini">${esc(c.correo||'')}</span></td>
+    <td>${esc(c.telefono||'—')}</td><td>${esc(c.pais||'—')}</td>
+    <td><span class="tag t-blue">${nc}</span></td>
+    <td class="tbl-actions">
+      <button class="iconbtn" onclick="openCliente('${c.id}')">✏️</button>
+      ${c.telefono?`<button class="iconbtn" onclick="api.sendWhatsApp('${c.telefono}','Hola ${esc(c.nombre)}, le escribe ${esc(DB.meta.asesor.nombre||'su asesor migratorio')}.')">💬</button>`:''}
+      <button class="iconbtn" onclick="delCliente('${c.id}')">🗑️</button>
+    </td></tr>`}).join('')}
+  </tbody></table></div>`;
+}
+
+// ---------------- VENCIMIENTOS ----------------
+function allVencimientos(){
+  const out=[];
+  DB.casos.forEach(c=>{
+    if(c.estado==='Aprobado'||c.estado==='Rechazado') return;
+    if(c.fechaCita) out.push({casoId:c.id,cliente:clienteName(c.clienteId),tipo:c.tipo,days:daysTo(c.fechaCita),label:'Cita: '+c.fechaCita,kind:'cita'});
+    if(c.fechaLimite) out.push({casoId:c.id,cliente:clienteName(c.clienteId),tipo:c.tipo,days:daysTo(c.fechaLimite),label:'Límite: '+c.fechaLimite,kind:'limite'});
+    (c.docs||[]).forEach(d=>{ if(d.vence) out.push({casoId:c.id,cliente:clienteName(c.clienteId),tipo:c.tipo,days:daysTo(d.vence),label:'Doc: '+d.req,kind:'doc'}); });
+  });
+  return out;
+}
+function renderVenc(){
+  const list=allVencimientos().filter(v=>v.days!==null).sort((a,b)=>a.days-b.days);
+  if(!list.length) return emptyState('⏰','Sin vencimientos','Cuando registres citas o fechas límite, aparecerán aquí con semáforo.');
+  const rojo=list.filter(v=>v.days<=7).length, amb=list.filter(v=>v.days>7&&v.days<=30).length;
+  return `<div class="kpis">
+    <div class="kpi" style="--accent:var(--red)"><div class="k">🔴 Urgentes (≤7d)</div><div class="v">${rojo}</div></div>
+    <div class="kpi" style="--accent:var(--amber)"><div class="k">🟡 Próximos (≤30d)</div><div class="v">${amb}</div></div>
+    <div class="kpi" style="--accent:var(--green)"><div class="k">🟢 Total activos</div><div class="v">${list.length}</div></div>
+  </div>
+  <div class="card"><table><thead><tr><th>Estado</th><th>Cliente</th><th>Trámite</th><th>Detalle</th><th>Cuándo</th><th>Acciones</th></tr></thead><tbody>
+  ${list.map(v=>`<tr>
+    <td><span class="dot" style="background:var(${semColor(v.days)})"></span></td>
+    <td><b>${esc(v.cliente)}</b></td><td class="mini">${esc(v.tipo)}</td><td>${esc(v.label)}</td>
+    <td><span class="pill-days" style="background:rgba(255,255,255,.06);color:var(${semColor(v.days)})">${semText(v.days)}</span></td>
+    <td class="tbl-actions">
+      <button class="iconbtn" onclick="openCasoDetail('${v.casoId}')">Ver</button>
+      <button class="btn wa sm" onclick="waVenc('${v.casoId}','${v.kind}')">WhatsApp</button>
+    </td></tr>`).join('')}
+  </tbody></table></div>`;
+}
+
+// ---------------- FINANZAS ----------------
+function renderFin(){
+  const cobrado=DB.pagos.filter(p=>p.estado==='Pagado').reduce((a,p)=>a+Number(p.monto||0),0);
+  const pend=DB.pagos.filter(p=>p.estado==='Pendiente').reduce((a,p)=>a+Number(p.monto||0),0);
+  const tasas=DB.pagos.filter(p=>p.tipo==='Tasa oficial').reduce((a,p)=>a+Number(p.monto||0),0);
+  const q=searchQ.toLowerCase();
+  const list=DB.pagos.filter(p=>!q||clienteName((DB.casos.find(c=>c.id===p.casoId)||{}).clienteId).toLowerCase().includes(q)).sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+  return `<div class="kpis">
+    <div class="kpi" style="--accent:var(--green)"><div class="k">Cobrado</div><div class="v" style="font-size:24px">${money(cobrado)}</div></div>
+    <div class="kpi" style="--accent:var(--amber)"><div class="k">Por cobrar</div><div class="v" style="font-size:24px">${money(pend)}</div></div>
+    <div class="kpi" style="--accent:var(--blue)"><div class="k">Tasas oficiales</div><div class="v" style="font-size:24px">${money(tasas)}</div></div>
+    <div class="kpi" style="--accent:var(--gold)"><div class="k">Movimientos</div><div class="v">${DB.pagos.length}</div></div>
+  </div>
+  <div class="card"><h3>💰 Pagos y cobros <span class="grow"></span><button class="btn sm" onclick="exportCSV('pagos')">⬇️ Exportar CSV</button></h3>
+  ${list.length?`<table><thead><tr><th>Fecha</th><th>Cliente / Caso</th><th>Concepto</th><th>Tipo</th><th>Monto</th><th>Estado</th><th></th></tr></thead><tbody>
+  ${list.map(p=>{const caso=DB.casos.find(c=>c.id===p.casoId)||{};return `<tr>
+    <td>${esc(p.fecha||'')}</td>
+    <td><b>${esc(clienteName(caso.clienteId))}</b><br><span class="mini">${esc(caso.tipo||'')}</span></td>
+    <td>${esc(p.concepto)}</td><td class="mini">${esc(p.tipo)}</td>
+    <td><b>${money(p.monto)}</b></td>
+    <td><span class="tag ${p.estado==='Pagado'?'t-green':'t-amber'}">${p.estado}</span></td>
+    <td class="tbl-actions">
+      ${p.estado==='Pendiente'?`<button class="btn green sm" onclick="pagar('${p.id}')">✓ Cobrar</button>
+      <button class="btn wa sm" onclick="waCobro('${p.id}')">💬</button>`:''}
+      <button class="iconbtn" onclick="openPago('${p.id}')">✏️</button>
+      <button class="iconbtn" onclick="delPago('${p.id}')">🗑️</button>
+    </td></tr>`}).join('')}
+  </tbody></table>`:emptyState('💰','Sin movimientos','Registra el primer pago o cobro de un caso.')}
+  </div>`;
+}
+
+// ---------------- LEADS ----------------
+function renderLeads(){
+  const est=['Nuevo','Contactado','Cotizado','Contratado','Descartado'];
+  const q=searchQ.toLowerCase();
+  const list=DB.leads.filter(l=>!q||l.nombre.toLowerCase().includes(q));
+  return `<div class="card"><h3>🎯 Embudo de prospectos <span class="grow"></span>
+    ${est.map(e=>`<span class="tag t-gray" style="margin-left:4px">${e}: ${DB.leads.filter(l=>l.estado===e).length}</span>`).join('')}</h3>
+  ${list.length?`<table><thead><tr><th>Prospecto</th><th>Teléfono</th><th>Fuente</th><th>Interés</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
+  ${list.map(l=>`<tr>
+    <td><b>${esc(l.nombre)}</b><br><span class="mini">${esc(l.creado||'')}</span></td>
+    <td>${esc(l.telefono||'—')}</td><td class="mini">${esc(l.fuente||'')}</td><td class="mini">${esc(l.interes||'')}</td>
+    <td><select class="tag" onchange="setLeadEstado('${l.id}',this.value)" style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:4px 8px;color:var(--txt)">
+      ${est.map(e=>`<option ${l.estado===e?'selected':''}>${e}</option>`).join('')}</select></td>
+    <td class="tbl-actions">
+      ${l.telefono?`<button class="btn wa sm" onclick="api.sendWhatsApp('${l.telefono}','Hola ${esc(l.nombre)}, gracias por su interés. Soy ${esc(DB.meta.asesor.nombre||'su asesor migratorio')}. ¿Cómo puedo ayudarle con su trámite?')">💬</button>`:''}
+      ${l.estado!=='Contratado'?`<button class="btn sm" onclick="convertLead('${l.id}')">→ Cliente</button>`:''}
+      <button class="iconbtn" onclick="openLead('${l.id}')">✏️</button>
+      <button class="iconbtn" onclick="delLead('${l.id}')">🗑️</button>
+    </td></tr>`).join('')}
+  </tbody></table>`:emptyState('🎯','Sin prospectos','Registra los interesados que aún no son clientes.')}</div>`;
+}
+
+// ---------------- CITAS ----------------
+function renderCitas(){
+  const list=[...DB.citas].sort((a,b)=>(a.fecha+'' ).localeCompare(b.fecha+''));
+  return `<div class="card"><h3>📅 Agenda de citas</h3>
+  ${list.length?`<table><thead><tr><th>Fecha</th><th>Hora</th><th>Cliente</th><th>Motivo</th><th>Cuándo</th><th>Acciones</th></tr></thead><tbody>
+  ${list.map(c=>{const d=daysTo(c.fecha);return `<tr>
+    <td><b>${esc(c.fecha)}</b></td><td>${esc(c.hora||'')}</td>
+    <td>${esc(clienteName(c.clienteId))}</td><td>${esc(c.titulo)}</td>
+    <td><span class="pill-days" style="background:rgba(255,255,255,.06);color:var(${semColor(d)})">${semText(d)}</span></td>
+    <td class="tbl-actions">
+      ${clientePhone(c.clienteId)?`<button class="btn wa sm" onclick="waCita('${c.id}')">💬 Recordar</button>`:''}
+      <button class="iconbtn" onclick="openCita('${c.id}')">✏️</button>
+      <button class="iconbtn" onclick="delCita('${c.id}')">🗑️</button>
+    </td></tr>`}).join('')}
+  </tbody></table>`:emptyState('📅','Sin citas','Agenda consultas y recuérdalas por WhatsApp con un clic.')}</div>`;
+}
+
+// ---------------- REPORTES ----------------
+function renderRep(){
+  return `<div class="grid2">
+    <div class="card"><h3>📈 Exportar datos</h3>
+      <p class="hint" style="margin-bottom:14px">Genera archivos CSV (abren en Excel) o imprime a PDF.</p>
+      <div class="wa-menu">
+        <button class="btn" onclick="exportCSV('casos')">⬇️ Casos</button>
+        <button class="btn" onclick="exportCSV('clientes')">⬇️ Clientes</button>
+        <button class="btn" onclick="exportCSV('pagos')">⬇️ Pagos</button>
+        <button class="btn" onclick="exportCSV('leads')">⬇️ Leads</button>
+        <button class="btn gold" onclick="window.print()">🖨️ Imprimir / PDF</button>
+      </div>
+    </div>
+    <div class="card"><h3>💾 Seguridad de datos</h3>
+      <p class="hint">Cada cambio se guarda automáticamente con copia de seguridad. Los respaldos se guardan en tu equipo.</p>
+      <div class="wa-menu"><button class="btn" onclick="api.openBackups()">📂 Ver carpeta de respaldos</button>
+      <button class="btn" onclick="exportFullBackup()">⬇️ Exportar respaldo completo (JSON)</button></div>
+    </div>
+    <div class="card"><h3>📊 Resumen general</h3>
+      <table><tbody>
+        <tr><td>Clientes</td><td><b>${DB.clientes.length}</b></td></tr>
+        <tr><td>Casos totales</td><td><b>${DB.casos.length}</b></td></tr>
+        <tr><td>Casos aprobados</td><td><b>${DB.casos.filter(c=>c.estado==='Aprobado').length}</b></td></tr>
+        <tr><td>Prospectos activos</td><td><b>${DB.leads.filter(l=>l.estado!=='Contratado'&&l.estado!=='Descartado').length}</b></td></tr>
+        <tr><td>Ingresos cobrados</td><td><b>${money(DB.pagos.filter(p=>p.estado==='Pagado').reduce((a,p)=>a+Number(p.monto||0),0))}</b></td></tr>
+        <tr><td>Por cobrar</td><td><b>${money(DB.pagos.filter(p=>p.estado==='Pendiente').reduce((a,p)=>a+Number(p.monto||0),0))}</b></td></tr>
+      </tbody></table>
+    </div>
+  </div>`;
+}
+
+// ---------------- CONFIG ----------------
+function renderCfg(){
+  const a=DB.meta.asesor,c=DB.meta.config;
+  return `<div class="grid2">
+    <div class="card"><h3>👤 Perfil del asesor / oficina</h3>
+      <div class="fg"><label>Logo de la marca (aparece en la barra y en los PDF)</label>
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="width:70px;height:70px;background:var(--panel);border:1px solid var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden" id="cfgLogoPrev">${logoHTML()}</div>
+          <div>
+            <input type="file" id="cfgLogoFile" accept="image/*" style="display:none" onchange="uploadLogo(this)">
+            <button class="btn" onclick="document.getElementById('cfgLogoFile').click()">📁 Cargar logo (PNG/JPG)</button>
+            ${a.logoData?`<button class="btn ghost sm" style="margin-left:6px" onclick="removeLogo()">Quitar</button>`:''}
+            <div class="hint">Recomendado: imagen cuadrada, fondo transparente.</div>
+          </div>
+        </div>
+      </div>
+      <div class="fg"><label>Nombre del asesor</label><input id="cfgNombre" value="${esc(a.nombre)}"></div>
+      <div class="fg"><label>Nombre de la oficina / marca</label><input id="cfgOficina" value="${esc(a.oficina)}"></div>
+      <div class="frow"><div class="fg"><label>Teléfono</label><input id="cfgTel" value="${esc(a.telefono)}"></div>
+      <div class="fg"><label>Correo</label><input id="cfgCorreo" value="${esc(a.correo)}"></div></div>
+    </div>
+    <div class="card"><h3>⚙️ Regional</h3>
+      <div class="fg"><label>País principal</label><input id="cfgPais" value="${esc(c.pais)}"></div>
+      <div class="frow"><div class="fg"><label>Moneda (símbolo)</label><input id="cfgMoneda" value="${esc(c.moneda)}"></div>
+      <div class="fg"><label>Impuesto % (ITBIS/IVA)</label><input id="cfgItbis" type="number" value="${esc(c.itbis)}"></div></div>
+      <button class="btn gold" onclick="saveCfg()">💾 Guardar configuración</button>
+    </div>
+  </div>
+  <div class="card"><h3>🧪 Datos de demostración</h3>
+    <p class="hint" style="margin-bottom:12px">Carga 34 clientes de ejemplo con casos, documentos, pagos, leads y citas para probar cómo se ve el sistema lleno. Ideal para explorar antes de empezar de verdad.</p>
+    <div class="wa-menu">
+      <button class="btn gold" onclick="loadDemo()">🧪 Cargar datos de demostración</button>
+      <button class="btn red" onclick="wipeData()">🗑️ Borrar todos los datos</button>
+    </div>
+    <p class="hint" style="margin-top:10px">⚠️ Cargar la demo reemplaza los datos actuales. Siempre hay respaldos en la carpeta de backups por si acaso.</p>
+  </div>
+  <div class="card"><h3>ℹ️ Sobre la app</h3>
+    <p class="hint">MigraCRM PRO v${DB.meta.version} · Funciona 100% offline. Tus datos nunca salen de este equipo.<br>
+    Autoguardado + copias de seguridad automáticas. WhatsApp abre la app instalada con el mensaje listo.</p>
+  </div>`;
+}
+
+function emptyState(i,t,d){ return `<div class="card"><div class="empty"><div class="big">${i}</div><h3 style="justify-content:center">${t}</h3><p class="hint">${d}</p></div></div>`; }
+
+// ============================================================================
+//  WIRE (eventos por render)
+// ============================================================================
+function wire(){
+  // drag & drop kanban
+  document.querySelectorAll('.kc').forEach(card=>{
+    card.addEventListener('dragstart',e=>{e.dataTransfer.setData('id',card.dataset.id);card.classList.add('drag');e.stopPropagation();});
+    card.addEventListener('dragend',()=>card.classList.remove('drag'));
+  });
+  document.querySelectorAll('.col-b').forEach(col=>{
+    col.addEventListener('dragover',e=>{e.preventDefault();col.parentElement.classList.add('drop');});
+    col.addEventListener('dragleave',()=>col.parentElement.classList.remove('drop'));
+    col.addEventListener('drop',e=>{e.preventDefault();col.parentElement.classList.remove('drop');
+      const id=e.dataTransfer.getData('id');const caso=DB.casos.find(c=>c.id===id);
+      if(caso){caso.estado=col.dataset.est; if(col.dataset.est==='Aprobado'||col.dataset.est==='Rechazado')caso.cerrado=today(); save();render();}
+    });
+  });
+}
+
+// ============================================================================
+//  MODALES
+// ============================================================================
+function modal(html){ $('#mod').innerHTML=html; $('#ov').classList.add('on'); }
+function closeModal(){ $('#ov').classList.remove('on'); }
+$('#ov').addEventListener('click',e=>{if(e.target.id==='ov')closeModal();});
+
+// ---- Cliente ----
+function openCliente(id){
+  const c=id?DB.clientes.find(x=>x.id===id):{};
+  modal(`<div class="mh"><h3>${id?'Editar':'Nuevo'} cliente</h3><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="mb">
+    <div class="fg"><label>Nombre completo *</label><input id="clNombre" value="${esc(c.nombre||'')}"></div>
+    <div class="frow"><div class="fg"><label>Teléfono (con código país)</label><input id="clTel" placeholder="1809..." value="${esc(c.telefono||'')}"></div>
+    <div class="fg"><label>Correo</label><input id="clCorreo" value="${esc(c.correo||'')}"></div></div>
+    <div class="frow"><div class="fg"><label>País de origen</label><input id="clPais" value="${esc(c.pais||'')}"></div>
+    <div class="fg"><label>Documento (cédula/pasaporte)</label><input id="clDoc" value="${esc(c.documento||'')}"></div></div>
+    <div class="fg"><label>Notas</label><textarea id="clNota">${esc(c.nota||'')}</textarea></div>
+  </div>
+  <div class="mf"><button class="btn ghost" onclick="closeModal()">Cancelar</button><button class="btn gold" onclick="saveCliente('${id||''}')">Guardar</button></div>`);
+}
+function saveCliente(id){
+  const n=$('#clNombre').value.trim(); if(!n)return toast('El nombre es obligatorio');
+  const data={nombre:n,telefono:$('#clTel').value.trim(),correo:$('#clCorreo').value.trim(),pais:$('#clPais').value.trim(),documento:$('#clDoc').value.trim(),nota:$('#clNota').value.trim()};
+  if(id){Object.assign(DB.clientes.find(x=>x.id===id),data);} else {data.id=uid();data.creado=today();DB.clientes.push(data);}
+  save();closeModal();render();toast('Cliente guardado');
+}
+function delCliente(id){ if(DB.casos.some(c=>c.clienteId===id))return toast('Tiene casos asociados; elimínalos primero'); if(confirm('¿Eliminar cliente?')){DB.clientes=DB.clientes.filter(c=>c.id!==id);save();render();} }
+
+// ---- Caso ----
+function openCaso(id){
+  if(!DB.clientes.length){ toast('Primero agrega un cliente'); return openCliente(); }
+  const c=id?DB.casos.find(x=>x.id===id):{};
+  modal(`<div class="mh"><h3>${id?'Editar':'Nuevo'} caso</h3><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="mb">
+    <div class="frow"><div class="fg"><label>Cliente *</label><select id="caCliente">${DB.clientes.map(x=>`<option value="${x.id}" ${c.clienteId===x.id?'selected':''}>${esc(x.nombre)}</option>`).join('')}</select></div>
+    <div class="fg"><label>Tipo de trámite *</label><select id="caTipo">${Object.keys(TRAMITES).map(t=>`<option ${c.tipo===t?'selected':''}>${t}</option>`).join('')}</select></div></div>
+    <div class="frow3"><div class="fg"><label>País destino</label><input id="caDestino" value="${esc(c.destino||'')}"></div>
+    <div class="fg"><label>N° de expediente</label><input id="caExp" value="${esc(c.expediente||'')}"></div>
+    <div class="fg"><label>Estado</label><select id="caEstado">${ESTADOS.map(e=>`<option ${((c.estado||'Consulta')===e.k)?'selected':''}>${e.k}</option>`).join('')}</select></div></div>
+    <div class="frow3"><div class="fg"><label>📅 Fecha de cita</label><input id="caCita" type="date" value="${esc(c.fechaCita||'')}"></div>
+    <div class="fg"><label>⏰ Fecha límite</label><input id="caLimite" type="date" value="${esc(c.fechaLimite||'')}"></div>
+    <div class="fg"><label>Prioridad</label><select id="caPrio">${['Normal','Alta','Urgente'].map(p=>`<option ${c.prioridad===p?'selected':''}>${p}</option>`).join('')}</select></div></div>
+    <div class="fg"><label>Notas del caso</label><textarea id="caNotas">${esc(c.notas||'')}</textarea></div>
+    ${!id?`<p class="hint">✓ Se generará automáticamente el checklist de documentos según el tipo de trámite.</p>`:''}
+  </div>
+  <div class="mf"><button class="btn ghost" onclick="closeModal()">Cancelar</button><button class="btn gold" onclick="saveCaso('${id||''}')">Guardar</button></div>`);
+}
+function saveCaso(id){
+  const data={clienteId:$('#caCliente').value,tipo:$('#caTipo').value,destino:$('#caDestino').value.trim(),
+    expediente:$('#caExp').value.trim(),estado:$('#caEstado').value,fechaCita:$('#caCita').value,
+    fechaLimite:$('#caLimite').value,prioridad:$('#caPrio').value,notas:$('#caNotas').value.trim()};
+  if(id){const caso=DB.casos.find(x=>x.id===id);
+    // si cambió el tipo, ofrecer regenerar docs faltantes
+    if(caso.tipo!==data.tipo){ (TRAMITES[data.tipo]||[]).forEach(req=>{ if(!caso.docs.some(d=>d.req===req)) caso.docs.push({req,estado:'Pendiente'}); }); }
+    Object.assign(caso,data);
+  } else {
+    data.id=uid();data.creado=today();
+    data.docs=(TRAMITES[data.tipo]||[]).map(req=>({req,estado:'Pendiente',vence:'',archivo:null}));
+    DB.casos.push(data);
+  }
+  save();closeModal();render();toast('Caso guardado');
+}
+function delCaso(id){ if(confirm('¿Eliminar este caso y sus documentos?')){DB.casos=DB.casos.filter(c=>c.id!==id);DB.pagos=DB.pagos.filter(p=>p.casoId!==id);save();closeModal();render();} }
+
+// ---- Detalle de caso (documentos + WhatsApp) ----
+function openCasoDetail(id){
+  const c=DB.casos.find(x=>x.id===id); if(!c)return;
+  if(!c.docs)c.docs=[];
+  const p=casoProgress(c);
+  const cli=DB.clientes.find(x=>x.id===c.clienteId)||{};
+  modal(`<div class="mh"><h3>${esc(cli.nombre||'Caso')} · ${esc(c.tipo)}</h3><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="mb">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+      <span class="tag t-blue">${esc(c.estado)}</span>
+      ${c.expediente?`<span class="tag t-gray">Exp #${esc(c.expediente)}</span>`:''}
+      ${c.fechaCita?`<span class="tag t-amber">📅 Cita ${esc(c.fechaCita)}</span>`:''}
+      ${c.fechaLimite?`<span class="tag ${semColor(daysTo(c.fechaLimite))==='--red'?'t-red':'t-amber'}">⏰ ${semText(daysTo(c.fechaLimite))}</span>`:''}
+    </div>
+    <div style="margin-bottom:6px;display:flex;justify-content:space-between"><b>Documentos</b><span>${p}% completo</span></div>
+    <div class="progress" style="margin-bottom:14px"><i style="width:${p}%"></i></div>
+    <div id="docList">${c.docs.map((d,i)=>docRow(c.id,i,d)).join('')||'<p class="hint">Sin documentos.</p>'}</div>
+    <button class="btn sm" style="margin-top:10px" onclick="addDoc('${c.id}')">+ Agregar documento</button>
+    ${c.notas?`<div class="card" style="margin-top:16px;background:var(--bg)"><b>Notas</b><p class="hint">${esc(c.notas)}</p></div>`:''}
+    <div class="card" style="margin-top:16px;background:var(--bg)">
+      <b>💬 Enviar por WhatsApp a ${esc(cli.nombre||'')}</b>
+      <div class="wa-menu">
+        <button class="btn wa sm" onclick="waEstado('${c.id}')">Estado del caso</button>
+        <button class="btn wa sm" onclick="waDocsPend('${c.id}')">Documentos pendientes</button>
+        <button class="btn wa sm" onclick="waVenc('${c.id}','cita')">Recordar cita</button>
+      </div>
+      ${!cli.telefono?'<p class="hint">⚠️ Este cliente no tiene teléfono registrado.</p>':''}
+    </div>
+  </div>
+  <div class="mf">
+    <button class="btn red" onclick="delCaso('${c.id}')">🗑️ Eliminar</button>
+    <div class="grow" style="flex:1"></div>
+    <button class="btn" onclick="openPago(null,'${c.id}')">💰 Agregar pago</button>
+    <button class="btn gold" onclick="openCaso('${c.id}')">✏️ Editar caso</button>
+  </div>`);
+}
+function docRow(casoId,i,d){
+  const done=d.estado==='Recibido'||d.estado==='Verificado';
+  const dl=daysTo(d.vence);
+  return `<div class="docrow">
+    <div class="chk ${done?'ok':''}" onclick="toggleDoc('${casoId}',${i})">${done?'✓':''}</div>
+    <div class="g"><div style="font-size:13px">${esc(d.req)}</div>
+      <div class="mini">${esc(d.estado)}${d.archivo?' · 📎 '+esc(d.archivo.name):''}${d.vence?' · vence '+d.vence+' ('+semText(dl)+')':''}</div></div>
+    <button class="iconbtn" onclick="attachDoc('${casoId}',${i})" title="Adjuntar archivo">📎</button>
+    ${d.archivo?`<button class="iconbtn" onclick="api.openFile('${d.archivo.stored}')" title="Abrir">👁️</button>`:''}
+    <button class="iconbtn" onclick="docVence('${casoId}',${i})" title="Fecha de vencimiento">📅</button>
+    <button class="iconbtn" onclick="rmDoc('${casoId}',${i})">🗑️</button>
+  </div>`;
+}
+function toggleDoc(casoId,i){const c=DB.casos.find(x=>x.id===casoId);const d=c.docs[i];d.estado=(d.estado==='Recibido'||d.estado==='Verificado')?'Pendiente':'Recibido';save();openCasoDetail(casoId);}
+async function attachDoc(casoId,i){const f=await window.api.attachFile();if(f){const c=DB.casos.find(x=>x.id===casoId);c.docs[i].archivo=f;if(c.docs[i].estado==='Pendiente')c.docs[i].estado='Recibido';save();openCasoDetail(casoId);toast('Archivo adjuntado');}}
+function docVence(casoId,i){const c=DB.casos.find(x=>x.id===casoId);const v=prompt('Fecha de vencimiento del documento (AAAA-MM-DD):',c.docs[i].vence||'');if(v!==null){c.docs[i].vence=v.trim();save();openCasoDetail(casoId);}}
+function addDoc(casoId){const n=prompt('Nombre del documento:');if(n){DB.casos.find(x=>x.id===casoId).docs.push({req:n.trim(),estado:'Pendiente',vence:'',archivo:null});save();openCasoDetail(casoId);}}
+function rmDoc(casoId,i){const c=DB.casos.find(x=>x.id===casoId);c.docs.splice(i,1);save();openCasoDetail(casoId);}
+
+// ---- Pago ----
+function openPago(id,casoId){
+  if(!DB.casos.length){toast('Primero crea un caso');return;}
+  const p=id?DB.pagos.find(x=>x.id===id):{casoId:casoId||''};
+  modal(`<div class="mh"><h3>${id?'Editar':'Nuevo'} pago</h3><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="mb">
+    <div class="fg"><label>Caso *</label><select id="pgCaso">${DB.casos.map(c=>`<option value="${c.id}" ${p.casoId===c.id?'selected':''}>${esc(clienteName(c.clienteId))} — ${esc(c.tipo)}</option>`).join('')}</select></div>
+    <div class="fg"><label>Concepto</label><input id="pgConcepto" placeholder="Anticipo / Honorarios / Tasa consular" value="${esc(p.concepto||'')}"></div>
+    <div class="frow3">
+      <div class="fg"><label>Monto</label><input id="pgMonto" type="number" step="0.01" value="${esc(p.monto||'')}"></div>
+      <div class="fg"><label>Tipo</label><select id="pgTipo">${['Honorario','Tasa oficial','Otro'].map(t=>`<option ${p.tipo===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="fg"><label>Estado</label><select id="pgEstado">${['Pendiente','Pagado'].map(e=>`<option ${p.estado===e?'selected':''}>${e}</option>`).join('')}</select></div>
+    </div>
+    <div class="fg"><label>Fecha</label><input id="pgFecha" type="date" value="${esc(p.fecha||today())}"></div>
+  </div>
+  <div class="mf"><button class="btn ghost" onclick="closeModal()">Cancelar</button><button class="btn gold" onclick="savePago('${id||''}')">Guardar</button></div>`);
+}
+function savePago(id){
+  const data={casoId:$('#pgCaso').value,concepto:$('#pgConcepto').value.trim()||'Pago',monto:parseFloat($('#pgMonto').value)||0,tipo:$('#pgTipo').value,estado:$('#pgEstado').value,fecha:$('#pgFecha').value};
+  if(id)Object.assign(DB.pagos.find(x=>x.id===id),data);else{data.id=uid();DB.pagos.push(data);}
+  save();closeModal();render();toast('Pago guardado');
+}
+function pagar(id){DB.pagos.find(p=>p.id===id).estado='Pagado';save();render();toast('Marcado como cobrado');}
+function delPago(id){if(confirm('¿Eliminar pago?')){DB.pagos=DB.pagos.filter(p=>p.id!==id);save();render();}}
+
+// ---- Lead ----
+function openLead(id){
+  const l=id?DB.leads.find(x=>x.id===id):{};
+  modal(`<div class="mh"><h3>${id?'Editar':'Nuevo'} prospecto</h3><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="mb">
+    <div class="fg"><label>Nombre *</label><input id="ldNombre" value="${esc(l.nombre||'')}"></div>
+    <div class="frow"><div class="fg"><label>Teléfono</label><input id="ldTel" value="${esc(l.telefono||'')}"></div>
+    <div class="fg"><label>Fuente</label><select id="ldFuente">${FUENTES.map(f=>`<option ${l.fuente===f?'selected':''}>${f}</option>`).join('')}</select></div></div>
+    <div class="fg"><label>Interés / trámite deseado</label><input id="ldInteres" value="${esc(l.interes||'')}"></div>
+    <div class="fg"><label>Estado</label><select id="ldEstado">${['Nuevo','Contactado','Cotizado','Contratado','Descartado'].map(e=>`<option ${l.estado===e?'selected':''}>${e}</option>`).join('')}</select></div>
+  </div>
+  <div class="mf"><button class="btn ghost" onclick="closeModal()">Cancelar</button><button class="btn gold" onclick="saveLead('${id||''}')">Guardar</button></div>`);
+}
+function saveLead(id){
+  const n=$('#ldNombre').value.trim();if(!n)return toast('Nombre obligatorio');
+  const data={nombre:n,telefono:$('#ldTel').value.trim(),fuente:$('#ldFuente').value,interes:$('#ldInteres').value.trim(),estado:$('#ldEstado').value};
+  if(id)Object.assign(DB.leads.find(x=>x.id===id),data);else{data.id=uid();data.creado=today();DB.leads.push(data);}
+  save();closeModal();render();
+}
+function setLeadEstado(id,v){DB.leads.find(l=>l.id===id).estado=v;save();updateBadges();}
+function delLead(id){if(confirm('¿Eliminar prospecto?')){DB.leads=DB.leads.filter(l=>l.id!==id);save();render();}}
+function convertLead(id){
+  const l=DB.leads.find(x=>x.id===id);
+  DB.clientes.push({id:uid(),nombre:l.nombre,telefono:l.telefono,correo:'',pais:'',documento:'',nota:'Convertido desde lead ('+l.fuente+')',creado:today()});
+  l.estado='Contratado';save();render();toast('Convertido a cliente ✓');
+}
+
+// ---- Cita ----
+function openCita(id){
+  if(!DB.clientes.length){toast('Primero agrega un cliente');return openCliente();}
+  const c=id?DB.citas.find(x=>x.id===id):{};
+  modal(`<div class="mh"><h3>${id?'Editar':'Nueva'} cita</h3><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="mb">
+    <div class="fg"><label>Cliente *</label><select id="ctCliente">${DB.clientes.map(x=>`<option value="${x.id}" ${c.clienteId===x.id?'selected':''}>${esc(x.nombre)}</option>`).join('')}</select></div>
+    <div class="frow"><div class="fg"><label>Fecha</label><input id="ctFecha" type="date" value="${esc(c.fecha||today())}"></div>
+    <div class="fg"><label>Hora</label><input id="ctHora" type="time" value="${esc(c.hora||'')}"></div></div>
+    <div class="fg"><label>Motivo</label><input id="ctTitulo" placeholder="Consulta inicial, entrega de documentos…" value="${esc(c.titulo||'')}"></div>
+    <div class="fg"><label>Nota</label><textarea id="ctNota">${esc(c.nota||'')}</textarea></div>
+  </div>
+  <div class="mf"><button class="btn ghost" onclick="closeModal()">Cancelar</button><button class="btn gold" onclick="saveCita('${id||''}')">Guardar</button></div>`);
+}
+function saveCita(id){
+  const data={clienteId:$('#ctCliente').value,fecha:$('#ctFecha').value,hora:$('#ctHora').value,titulo:$('#ctTitulo').value.trim()||'Cita',nota:$('#ctNota').value.trim()};
+  if(id)Object.assign(DB.citas.find(x=>x.id===id),data);else{data.id=uid();DB.citas.push(data);}
+  save();closeModal();render();
+}
+function delCita(id){if(confirm('¿Eliminar cita?')){DB.citas=DB.citas.filter(c=>c.id!==id);save();render();}}
+
+// ============================================================================
+//  WHATSAPP (mensajes prearmados)
+// ============================================================================
+const firma = () => '\n\n— '+(DB.meta.asesor.nombre||'Su asesor migratorio')+(DB.meta.asesor.oficina?'\n'+DB.meta.asesor.oficina:'');
+function waEstado(casoId){
+  const c=DB.casos.find(x=>x.id===casoId);const tel=clientePhone(c.clienteId);if(!tel)return toast('Sin teléfono');
+  const p=casoProgress(c);
+  const msg=`Hola ${clienteName(c.clienteId)} 👋\n\nActualización de su trámite *${c.tipo}*:\n• Estado: *${c.estado}*\n• Documentos: ${p}% completo\n${c.expediente?'• Expediente: '+c.expediente+'\n':''}${c.fechaCita?'• Cita: '+c.fechaCita+'\n':''}${firma()}`;
+  api.sendWhatsApp(tel,msg);
+}
+function waDocsPend(casoId){
+  const c=DB.casos.find(x=>x.id===casoId);const tel=clientePhone(c.clienteId);if(!tel)return toast('Sin teléfono');
+  const pend=(c.docs||[]).filter(d=>d.estado==='Pendiente').map(d=>'• '+d.req);
+  const msg=pend.length?`Hola ${clienteName(c.clienteId)} 👋\n\nPara continuar con su *${c.tipo}* necesitamos estos documentos:\n\n${pend.join('\n')}\n\nPuede enviarlos por este medio.${firma()}`:`Hola ${clienteName(c.clienteId)}, ¡ya tenemos todos sus documentos! ✅${firma()}`;
+  api.sendWhatsApp(tel,msg);
+}
+function waVenc(casoId,kind){
+  const c=DB.casos.find(x=>x.id===casoId);const tel=clientePhone(c.clienteId);if(!tel)return toast('Sin teléfono');
+  let msg;
+  if(kind==='cita'&&c.fechaCita)msg=`Hola ${clienteName(c.clienteId)} 👋\nLe recordamos su *cita* el ${c.fechaCita}. Por favor confirme su asistencia.${firma()}`;
+  else msg=`Hola ${clienteName(c.clienteId)} 👋\nRecordatorio: su trámite *${c.tipo}* tiene una fecha importante el ${c.fechaLimite||c.fechaCita}. Estemos atentos.${firma()}`;
+  api.sendWhatsApp(tel,msg);
+}
+function waCita(id){
+  const c=DB.citas.find(x=>x.id===id);const tel=clientePhone(c.clienteId);if(!tel)return toast('Sin teléfono');
+  api.sendWhatsApp(tel,`Hola ${clienteName(c.clienteId)} 👋\nLe recordamos su cita:\n📅 ${c.fecha} ${c.hora||''}\n📝 ${c.titulo}${firma()}`);
+}
+function waCobro(id){
+  const p=DB.pagos.find(x=>x.id===id);const caso=DB.casos.find(c=>c.id===p.casoId)||{};const tel=clientePhone(caso.clienteId);if(!tel)return toast('Sin teléfono');
+  api.sendWhatsApp(tel,`Hola ${clienteName(caso.clienteId)} 👋\nLe recordamos el pago pendiente de su trámite *${caso.tipo}*:\n💰 ${p.concepto}: *${money(p.monto)}*\n\nGracias por su confianza.${firma()}`);
+}
+
+// ============================================================================
+//  EXPORTACIÓN
+// ============================================================================
+function toCSV(rows){ return rows.map(r=>r.map(c=>`"${String(c??'').replace(/"/g,'""')}"`).join(',')).join('\n'); }
+async function exportCSV(kind){
+  let rows,name;
+  if(kind==='clientes'){rows=[['Nombre','Teléfono','Correo','País','Documento']];DB.clientes.forEach(c=>rows.push([c.nombre,c.telefono,c.correo,c.pais,c.documento]));name='clientes.csv';}
+  else if(kind==='casos'){rows=[['Cliente','Trámite','Destino','Estado','Expediente','Cita','Límite','% Docs']];DB.casos.forEach(c=>rows.push([clienteName(c.clienteId),c.tipo,c.destino,c.estado,c.expediente,c.fechaCita,c.fechaLimite,casoProgress(c)+'%']));name='casos.csv';}
+  else if(kind==='pagos'){rows=[['Fecha','Cliente','Concepto','Tipo','Monto','Estado']];DB.pagos.forEach(p=>{const c=DB.casos.find(x=>x.id===p.casoId)||{};rows.push([p.fecha,clienteName(c.clienteId),p.concepto,p.tipo,p.monto,p.estado]);});name='pagos.csv';}
+  else {rows=[['Nombre','Teléfono','Fuente','Interés','Estado']];DB.leads.forEach(l=>rows.push([l.nombre,l.telefono,l.fuente,l.interes,l.estado]));name='leads.csv';}
+  const a=DB.meta.asesor;
+  const head=[[a.oficina||'MG Legal & Migration'],['Asesoría legal y migratoria'+(a.telefono?' · Tel: '+a.telefono:'')+(a.correo?' · '+a.correo:'')],['Reporte: '+kind+'  —  '+new Date().toLocaleString('es-DO')],[]];
+  const r=await window.api.exportSave(name,toCSV(head)+'\n'+toCSV(rows));
+  if(r)toast('Exportado ✓');
+}
+async function exportFullBackup(){ const r=await window.api.exportSave('migracrm-respaldo-'+today()+'.json',JSON.stringify(DB,null,2)); if(r)toast('Respaldo exportado ✓'); }
+
+// ---- Config ----
+function saveCfg(){
+  const logo=DB.meta.asesor.logoData||'';
+  DB.meta.asesor={nombre:$('#cfgNombre').value.trim(),oficina:$('#cfgOficina').value.trim(),telefono:$('#cfgTel').value.trim(),correo:$('#cfgCorreo').value.trim(),logoData:logo};
+  DB.meta.config={pais:$('#cfgPais').value.trim(),moneda:$('#cfgMoneda').value.trim()||'$',itbis:parseFloat($('#cfgItbis').value)||0};
+  save();paintBrand();render();toast('Configuración guardada');
+}
+function uploadLogo(input){
+  const f=input.files&&input.files[0]; if(!f)return;
+  if(f.size>2*1024*1024)return toast('La imagen es muy grande (máx 2MB)');
+  const r=new FileReader();
+  r.onload=()=>{ DB.meta.asesor.logoData=r.result; save(); paintBrand();
+    const p=$('#cfgLogoPrev'); if(p)p.innerHTML=logoHTML(); render(); toast('Logo cargado ✓'); };
+  r.readAsDataURL(f);
+}
+function removeLogo(){ DB.meta.asesor.logoData=''; save(); paintBrand(); render(); toast('Logo quitado'); }
+
+// ---- Datos de demostración ----
+function loadDemo(){
+  if(!confirm('Se cargarán 34 clientes de demostración y se REEMPLAZARÁN los datos actuales.\n(Hay respaldos automáticos en la carpeta de backups).\n\n¿Continuar?'))return;
+  const rnd=a=>a[Math.floor(Math.random()*a.length)];
+  const ri=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+  const dISO=off=>{const d=new Date();d.setDate(d.getDate()+off);return d.toISOString().slice(0,10);};
+  const nombres=['María Fernández','José Rodríguez','Ana Martínez','Luis García','Carmen Sánchez','Pedro Jiménez','Rosa Díaz','Miguel Reyes','Laura Peña','Carlos Herrera','Juana Castillo','Rafael Núñez','Yderlinda Paulino','Franklin Mejía','Altagracia Ramírez','Wilkin de la Cruz','Scarlet Ureña','Ramón Batista','Yolanda Guzmán','Héctor Polanco','Massiel Encarnación','Domingo Feliz','Katiuska Peralta','Ambiorix Santana','Yohanna Rosario','Elvis Cabrera','Nurys Valdez','Génesis Morel','Starling Abreu','Deivi Fernández','Marilyn Contreras','Junior Beltré','Esperanza Vólquez','Frailyn Tavárez'];
+  const paises=['República Dominicana','Venezuela','Colombia','Haití','Cuba','Perú','México','España','Ecuador'];
+  const destinos=['Estados Unidos','España','Canadá','Chile','México','Panamá','Italia'];
+  const tipos=Object.keys(TRAMITES);
+  const estadosK=ESTADOS.map(e=>e.k);
+  DB.clientes=[];DB.casos=[];DB.pagos=[];DB.leads=[];DB.citas=[];DB.bitacora=[];
+  nombres.forEach(nm=>{
+    const cid=uid();
+    DB.clientes.push({id:cid,nombre:nm,telefono:'1809'+ri(2000000,9999999),correo:nm.toLowerCase().normalize('NFD').replace(/[^a-z ]/g,'').trim().replace(/ +/g,'.')+'@correo.com',pais:rnd(paises),documento:ri(1,402)+'-'+ri(1000000,9999999)+'-'+ri(0,9),nota:'',creado:dISO(-ri(10,320))});
+    const nCasos=Math.random()<0.35?2:1;
+    for(let k=0;k<nCasos;k++){
+      const tipo=rnd(tipos), estado=rnd(estadosK);
+      const docs=(TRAMITES[tipo]||[]).map(req=>{const r=Math.random();return {req,estado:r<0.5?'Recibido':(r<0.6?'Verificado':'Pendiente'),vence:Math.random()<0.15?dISO(ri(-6,70)):'',archivo:null};});
+      const caso={id:uid(),clienteId:cid,tipo,destino:rnd(destinos),expediente:Math.random()<0.65?('EXP-'+ri(10000,99999)):'',
+        estado,prioridad:rnd(['Normal','Normal','Alta','Urgente']),
+        fechaCita:Math.random()<0.6?dISO(ri(-3,45)):'', fechaLimite:Math.random()<0.6?dISO(ri(-5,60)):'',
+        notas:'',creado:dISO(-ri(5,200)),docs};
+      if(estado==='Aprobado'||estado==='Rechazado')caso.cerrado=dISO(-ri(1,30));
+      DB.casos.push(caso);
+      if(Math.random()<0.85) DB.pagos.push({id:uid(),casoId:caso.id,concepto:rnd(['Anticipo','Honorarios','Tasa consular','Segundo pago']),monto:ri(1,14)*2500,tipo:rnd(['Honorario','Honorario','Tasa oficial']),estado:Math.random()<0.55?'Pagado':'Pendiente',fecha:dISO(-ri(1,60))});
+    }
+  });
+  ['Wander Ozuna','Nicaury Sosa','Bianca Terrero','Elián Mercedes','Perla Vargas','Josué Familia'].forEach(nm=>{
+    DB.leads.push({id:uid(),nombre:nm,telefono:'1849'+ri(2000000,9999999),fuente:rnd(FUENTES),interes:rnd(tipos),estado:rnd(['Nuevo','Nuevo','Contactado','Cotizado']),creado:dISO(-ri(1,20))});
+  });
+  DB.clientes.slice(0,8).forEach((c,i)=>DB.citas.push({id:uid(),clienteId:c.id,fecha:dISO(ri(-2,20)),hora:['09:00','10:30','14:00','16:00'][i%4],titulo:rnd(['Consulta inicial','Entrega de documentos','Revisión de expediente','Firma de contrato']),nota:''}));
+  save();paintBrand();render();toast('34 clientes de demostración cargados ✓');
+}
+function wipeData(){
+  if(!confirm('¿Borrar TODOS los datos (clientes, casos, pagos, leads y citas)?\nNo se puede deshacer, pero hay respaldos en la carpeta de backups.'))return;
+  DB.clientes=[];DB.casos=[];DB.pagos=[];DB.leads=[];DB.citas=[];DB.bitacora=[];
+  save();render();toast('Datos borrados');
+}
+
+// ---- Búsqueda ----
+$('#search').addEventListener('input',e=>{searchQ=e.target.value;render();});
+
+// Guardar antes de cerrar
+window.addEventListener('beforeunload',()=>{ if(DB) window.api.saveDB(JSON.stringify(DB)); });
+
+// -------- Actualización automática (banner) --------
+function setupUpdates(){
+  try{
+    window.api.onUpdateStatus((d)=>{
+      const b=$('#upd-banner'); if(!b||!d)return;
+      if(d.status==='available'){
+        b.className='on'; b.innerHTML=`<b>⬇️ Actualización disponible</b><div class="hint" style="margin-top:4px">Descargando la versión ${esc((d.info&&d.info.version)||'')}…</div>
+        <div class="row"><div class="pbar2"><i id="updP"></i></div></div>`;
+      } else if(d.status==='progress'){
+        b.className='on'; const i=$('#updP'); if(i)i.style.width=((d.info&&d.info.percent)||0)+'%';
+      } else if(d.status==='ready'){
+        b.className='on'; b.innerHTML=`<b>✅ Actualización lista</b><div class="hint" style="margin-top:4px">La versión ${esc((d.info&&d.info.version)||'')} se instalará al reiniciar.</div>
+        <div class="row"><button class="btn gold sm" onclick="window.api.updateInstall()">Reiniciar e instalar</button>
+        <button class="btn ghost sm" onclick="document.getElementById('upd-banner').className=''">Después</button></div>`;
+      }
+    });
+  }catch(e){}
+}
+setupUpdates();
+boot();
+</script>
+</body>
+</html>

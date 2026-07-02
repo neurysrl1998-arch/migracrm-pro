@@ -1,0 +1,65 @@
+========================================================
+   MigraCRM PRO  —  Sistema para Asesores Migratorios
+========================================================
+
+QUE ES
+------
+App de escritorio (Windows) para llevar el control total de una
+asesoria migratoria: clientes, casos, documentos, vencimientos,
+finanzas, prospectos, citas y reportes. Funciona 100% OFFLINE.
+Tus datos NUNCA salen de tu computadora.
+
+COMO INICIARLA (primera vez)
+----------------------------
+1) Necesitas tener instalado Node.js  (https://nodejs.org  -> version LTS)
+2) Haz doble clic en:  INICIAR MigraCRM.bat
+   - La PRIMERA vez descargará los componentes (necesita internet, ~1 min).
+   - Las siguientes veces abre al instante, sin internet.
+
+CREAR UN .EXE PORTABLE (opcional, para instalar en otra PC)
+-----------------------------------------------------------
+Abre una terminal en esta carpeta y ejecuta:
+   npm run dist
+El instalador/portable quedará en la carpeta "dist".
+
+SEGURIDAD DE TUS DATOS  (para que NUNCA falle)
+----------------------------------------------
+- Cada cambio se guarda automaticamente (autoguardado).
+- Escritura atomica: nunca queda un archivo a medias aunque
+  se corte la luz.
+- Copias de seguridad automaticas en cada guardado (guarda las
+  ultimas 60). Botón "Ver carpeta de respaldos" en Reportes.
+- Si el archivo principal se dañara, la app se recupera sola
+  desde el último respaldo válido.
+- Puedes exportar un respaldo completo (JSON) cuando quieras.
+Ubicacion de los datos: se muestra en la pestaña Reportes/Config.
+
+WHATSAPP
+--------
+Los botones verdes 💬 abren WhatsApp (Desktop o Web) con el
+mensaje YA ESCRITO para: recordar citas, pedir documentos
+pendientes, informar el estado del caso y recordar cobros.
+Asegurate de guardar el telefono del cliente CON codigo de pais
+(ej: 1809XXXXXXX).
+
+MODULOS
+-------
+- Panel        : indicadores clave, proximos vencimientos.
+- Casos        : tablero Kanban (arrastra las tarjetas para
+                 cambiar el estado del tramite).
+- Clientes     : ficha de cada persona.
+- Vencimientos : semaforo (rojo/amarillo/verde) de fechas.
+- Finanzas     : pagos, cobros, tasas oficiales, por cobrar.
+- Leads/CRM    : prospectos que aun no son clientes.
+- Citas        : agenda con recordatorio por WhatsApp.
+- Reportes     : exportar CSV/PDF y respaldos.
+- Config       : tu perfil, pais, moneda e impuesto.
+
+PRIMER PASO RECOMENDADO
+-----------------------
+1) Ve a Configuracion (⚙️) y pon tu nombre, oficina y telefono.
+2) Ajusta pais y moneda.
+3) Crea un Cliente, luego un Caso (se genera solo el checklist
+   de documentos segun el tipo de tramite).
+
+(c) Elite Trading Group — v1.0
