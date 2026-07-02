@@ -296,6 +296,7 @@ let currentTab = 'dash';
 let searchQ = '';
 let casosView = 'lista';      // 'lista' | 'tablero'
 let casosFiltroEstado = '';   // '' = todos
+let pagoComprobante = null;    // comprobante/voucher temporal del modal de pago
 
 function blankDB(){
   return {
@@ -601,6 +602,7 @@ function renderFin(){
     <td class="tbl-actions">
       ${p.estado==='Pendiente'?`<button class="btn green sm" onclick="pagar('${p.id}')">✓ Cobrar</button>
       <button class="btn wa sm" onclick="waCobro('${p.id}')">💬</button>`:''}
+      ${p.comprobante?`<button class="iconbtn" onclick="api.openFile('${p.comprobante.stored}')" title="Ver comprobante: ${esc(p.comprobante.name)}">🧾</button>`:''}
       <button class="iconbtn" onclick="openPago('${p.id}')">✏️</button>
       <button class="iconbtn" onclick="delPago('${p.id}')">🗑️</button>
     </td></tr>`}).join('')}
@@ -862,9 +864,20 @@ function addDoc(casoId){const n=prompt('Nombre del documento:');if(n){DB.casos.f
 function rmDoc(casoId,i){const c=DB.casos.find(x=>x.id===casoId);c.docs.splice(i,1);save();openCasoDetail(casoId);}
 
 // ---- Pago ----
+function pagoCompHTML(){
+  if(pagoComprobante){
+    return `<span class="tag t-green">🧾 ${esc(pagoComprobante.name)}</span>
+      <button type="button" class="btn sm" onclick="api.openFile('${pagoComprobante.stored}')">👁️ Ver</button>
+      <button type="button" class="btn ghost sm" onclick="removePagoComprobante()">Quitar</button>`;
+  }
+  return `<button type="button" class="btn" onclick="attachPagoComprobante()">📎 Adjuntar comprobante (imagen / PDF)</button>`;
+}
+async function attachPagoComprobante(){ const f=await window.api.attachFile(); if(f){ pagoComprobante=f; const w=$('#pgCompWrap'); if(w)w.innerHTML=pagoCompHTML(); toast('Comprobante adjuntado'); } }
+function removePagoComprobante(){ pagoComprobante=null; const w=$('#pgCompWrap'); if(w)w.innerHTML=pagoCompHTML(); }
 function openPago(id,casoId){
   if(!DB.casos.length){toast('Primero crea un caso');return;}
   const p=id?DB.pagos.find(x=>x.id===id):{casoId:casoId||''};
+  pagoComprobante = p.comprobante || null;
   modal(`<div class="mh"><h3>${id?'Editar':'Nuevo'} pago</h3><button class="x" onclick="closeModal()">✕</button></div>
   <div class="mb">
     <div class="fg"><label>Caso *</label><select id="pgCaso">${DB.casos.map(c=>`<option value="${c.id}" ${p.casoId===c.id?'selected':''}>${esc(clienteName(c.clienteId))} — ${esc(c.tipo)}</option>`).join('')}</select></div>
@@ -875,11 +888,14 @@ function openPago(id,casoId){
       <div class="fg"><label>Estado</label><select id="pgEstado">${['Pendiente','Pagado'].map(e=>`<option ${p.estado===e?'selected':''}>${e}</option>`).join('')}</select></div>
     </div>
     <div class="fg"><label>Fecha</label><input id="pgFecha" type="date" value="${esc(p.fecha||today())}"></div>
+    <div class="fg"><label>Comprobante / Voucher de la transferencia</label>
+      <div id="pgCompWrap" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">${pagoCompHTML()}</div>
+    </div>
   </div>
   <div class="mf"><button class="btn ghost" onclick="closeModal()">Cancelar</button><button class="btn gold" onclick="savePago('${id||''}')">Guardar</button></div>`);
 }
 function savePago(id){
-  const data={casoId:$('#pgCaso').value,concepto:$('#pgConcepto').value.trim()||'Pago',monto:parseFloat($('#pgMonto').value)||0,tipo:$('#pgTipo').value,estado:$('#pgEstado').value,fecha:$('#pgFecha').value};
+  const data={casoId:$('#pgCaso').value,concepto:$('#pgConcepto').value.trim()||'Pago',monto:parseFloat($('#pgMonto').value)||0,tipo:$('#pgTipo').value,estado:$('#pgEstado').value,fecha:$('#pgFecha').value,comprobante:pagoComprobante};
   if(id)Object.assign(DB.pagos.find(x=>x.id===id),data);else{data.id=uid();DB.pagos.push(data);}
   save();closeModal();render();toast('Pago guardado');
 }
@@ -1057,12 +1073,51 @@ function setupUpdates(){
       } else if(d.status==='progress'){
         b.className='on'; const i=$('#updP'); if(i)i.style.width=((d.info&&d.info.percent)||0)+'%';
       } else if(d.status==='ready'){
-        b.className='on'; b.innerHTML=`<b>✅ Actualización lista</b><div class="hint" style="margin-top:4px">La versión ${esc((d.info&&d.info.version)||'')} se instalará al reiniciar.</div>
-        <div class="row"><button class="btn gold sm" onclick="window.api.updateInstall()">Reiniciar e instalar</button>
-        <button class="btn ghost sm" onclick="document.getElementById('upd-banner').className=''">Después</button></div>`;
+        updVersion=(d.info&&d.info.version)||''; updReadyBanner();
       }
     });
   }catch(e){}
+}
+let updVersion=''; let updTimer=null;
+function updReadyBanner(){
+  const b=$('#upd-banner'); if(!b)return; b.className='on';
+  b.innerHTML=`<b>✅ Actualización lista</b>
+    <div class="hint" style="margin-top:4px">Versión ${esc(updVersion)}. ¿Cuándo deseas instalarla?</div>
+    <div class="row"><button class="btn gold sm" onclick="window.api.updateInstall()">⚡ Instalar ahora</button>
+      <button class="btn sm" onclick="updShowSchedule()">🕒 Programar hora</button></div>
+    <div id="updSched" style="display:none;margin-top:10px">
+      <label class="hint" style="display:block;margin-bottom:5px">Elige la hora de instalación:</label>
+      <div class="row" style="margin-top:0">
+        <input id="updTime" type="time" style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 9px;color:var(--txt);font-size:13px">
+        <button class="btn gold sm" onclick="updSchedule()">Confirmar</button>
+      </div>
+      <div class="row"><button class="btn ghost sm" onclick="updInstallOnClose()">O instalar al cerrar la app</button></div>
+    </div>
+    <div style="text-align:right;margin-top:6px"><span class="mini" style="cursor:pointer" onclick="document.getElementById('upd-banner').className=''">Ocultar por ahora ✕</span></div>`;
+}
+function updShowSchedule(){ const s=$('#updSched'); if(s)s.style.display=s.style.display==='none'?'block':'none'; }
+function updSchedule(){
+  const t=$('#updTime')&&$('#updTime').value; if(!t)return toast('Elige una hora');
+  const [hh,mm]=t.split(':').map(Number);
+  const now=new Date(), target=new Date(); target.setHours(hh,mm,0,0);
+  if(target<=now) target.setDate(target.getDate()+1); // si ya pasó, mañana
+  clearTimeout(updTimer);
+  updTimer=setTimeout(()=>{ try{ window.api.updateInstall(); }catch(e){} }, target-now);
+  const mañana = target.getDate()!==now.getDate();
+  const b=$('#upd-banner');
+  b.innerHTML=`<b>🕒 Instalación programada</b>
+    <div class="hint" style="margin-top:4px">Se instalará a las <b>${t}</b>${mañana?' (mañana)':''}. Si cierras la app antes, se instala al cerrar.</div>
+    <div class="row"><button class="btn gold sm" onclick="window.api.updateInstall()">⚡ Instalar ahora</button>
+      <button class="btn ghost sm" onclick="updReadyBanner()">Cambiar</button></div>`;
+  toast('Actualización programada para las '+t);
+}
+function updInstallOnClose(){
+  const b=$('#upd-banner');
+  b.innerHTML=`<b>✅ Se instalará al cerrar</b>
+    <div class="hint" style="margin-top:4px">La actualización se aplicará sola la próxima vez que cierres MigraCRM.</div>
+    <div class="row"><button class="btn gold sm" onclick="window.api.updateInstall()">⚡ Instalar ahora</button>
+      <button class="btn ghost sm" onclick="document.getElementById('upd-banner').className=''">Entendido</button></div>`;
+  toast('Se instalará al cerrar la app');
 }
 setupUpdates();
 boot();
