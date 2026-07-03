@@ -388,7 +388,7 @@ if (!window.api) {
     exportSave:  (name, content) => { const b=new Blob([content],{type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name; a.click(); return name; },
     openBackups: () => alert('La carpeta de respaldos está disponible en la app de escritorio.'),
     paths:       () => ({ data:'(navegador)', backups:'(navegador)', adjuntos:'(navegador)' }),
-    version:     () => '1.7.0',
+    version:     () => '1.8.0',
     onUpdateStatus: () => {},
     updateInstall:  () => {},
     updateCheck:    () => {}
@@ -482,6 +482,10 @@ const INTERVIEW={
   'Ciudadanía / Naturalización':['¿Cuánto tiempo lleva residiendo en el país?','¿Por qué desea naturalizarse?','Preguntas de civismo/historia del país','¿Ha salido del país por períodos largos?'],
   '_':['¿Cuál es el propósito de su trámite?','¿Cómo se sostiene económicamente?','¿Tiene antecedentes migratorios o penales?','¿Qué vínculos tiene con su país de origen?','¿Por qué eligió este país?']
 };
+// Accesos que leen la versión editable (DB) con respaldo a la de fábrica
+function getTramites(){ return (DB && DB.tramites) || TRAMITES; }
+function getTramiteDocs(tipo){ return getTramites()[tipo] || []; }
+function getInterview(tipo){ const e=(DB && DB.entrevistas) || INTERVIEW; return e[tipo] || e['_'] || []; }
 
 // -------- helpers de fecha --------
 function addDaysISO(iso,n){ const d=new Date((iso||today())+'T00:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
@@ -672,7 +676,7 @@ async function expedienteMaestro(casoId){
 }
 function printEntrevista(casoId){
   const c=DB.casos.find(x=>x.id===casoId); const cli=DB.clientes.find(x=>x.id===c.clienteId)||{};
-  const qs=INTERVIEW[c.tipo]||INTERVIEW['_'];
+  const qs=getInterview(c.tipo);
   previewDoc(`${docHeader()}<h2>Simulacro de Entrevista Consular — ${esc(c.tipo)}</h2>
     <p><b>Cliente:</b> ${esc(cli.nombre||'')}</p>
     <ol>${qs.map(q=>`<li style="margin-bottom:14px">${esc(q)}<br><span style="color:#999">Respuesta: ____________________________________________</span></li>`).join('')}</ol>`,'Simulacro de entrevista',casoId);
@@ -694,7 +698,7 @@ function waElegibilidad(casoId){
 }
 function waEntrevista(casoId){
   const c=DB.casos.find(x=>x.id===casoId); const tel=clientePhone(c.clienteId); if(!tel)return toast('Sin teléfono');
-  const qs=INTERVIEW[c.tipo]||INTERVIEW['_'];
+  const qs=getInterview(c.tipo);
   api.sendWhatsApp(tel,`Hola ${clienteName(c.clienteId)} 👋\nPreguntas para practicar antes de su entrevista (${c.tipo}):\n\n${qs.map((q,i)=>(i+1)+'. '+q).join('\n')}${firma()}`);
 }
 function waRenovacion(casoId){
@@ -729,6 +733,8 @@ async function boot(){
   ['clientes','casos','pagos','leads','citas','bitacora','usuarios'].forEach(k=>{ if(!Array.isArray(DB[k])) DB[k]=[]; });
   if(!DB.meta) DB.meta = blankDB().meta;
   if(!DB.plantillas) DB.plantillas = JSON.parse(JSON.stringify(DEFAULT_PLANTILLAS));
+  if(!DB.tramites) DB.tramites = JSON.parse(JSON.stringify(TRAMITES));
+  if(!DB.entrevistas) DB.entrevistas = JSON.parse(JSON.stringify(INTERVIEW));
   const p = await window.api.paths();
   try{ appVersion = await window.api.version(); }catch(e){}
   $('#footinfo').innerHTML = 'BD local segura · v'+esc(appVersion||'')+'<br>'+esc(DB.meta.config.pais||'');
@@ -781,7 +787,7 @@ function buildNav(){
   const tabs=TABS.filter(t=> t.admin ? isAdmin() : !isAdmin());
   $('#nav').innerHTML = tabs.map(t=>`<button data-k="${t.k}" class="${t.k===currentTab?'on':''}">
     <span class="ico">${t.i}</span><span>${t.t}</span><span class="badge" id="bdg-${t.k}" style="display:none"></span></button>`).join('');
-  $('#nav').querySelectorAll('button').forEach(b=>b.onclick=()=>{ currentTab=b.dataset.k; buildNav(); render(); });
+  $('#nav').querySelectorAll('button').forEach(b=>b.onclick=()=>{ currentTab=b.dataset.k; searchQ=''; if($('#search'))$('#search').value=''; buildNav(); render(); });
   updateBadges(); paintUserBox();
 }
 function paintUserBox(){
@@ -803,6 +809,7 @@ function render(){
   let tab = TABS.find(t=>t.k===currentTab);
   if(!tab || (tab.admin && !isAdmin()) || (!tab.admin && isAdmin())){ currentTab = isAdmin()?'plantillas':'dash'; tab=TABS.find(t=>t.k===currentTab); buildNav(); }
   $('#ttl').textContent = tab.t;
+  const sb=$('#search'); if(sb) sb.style.display = (isAdmin()||currentTab==='rep') ? 'none' : '';
   const map = {dash:renderDash,casos:renderCasos,clientes:renderClientes,venc:renderVenc,record:renderRecord,fin:renderFin,leads:renderLeads,citas:renderCitas,renov:renderRenov,rep:renderRep,plantillas:renderPlantillas,usuarios:renderUsuarios,cfg:renderCfg};
   $('#tsub').textContent = subFor(currentTab);
   $('#view').innerHTML = map[currentTab]();
@@ -985,7 +992,8 @@ function allVencimientos(){
   return out;
 }
 function renderVenc(){
-  const list=allVencimientos().filter(v=>v.days!==null).sort((a,b)=>a.days-b.days);
+  const q=searchQ.toLowerCase();
+  const list=allVencimientos().filter(v=>v.days!==null && (!q||v.cliente.toLowerCase().includes(q))).sort((a,b)=>a.days-b.days);
   if(!list.length) return emptyState('⏰','Sin vencimientos','Cuando registres citas o fechas límite, aparecerán aquí con semáforo.');
   const rojo=list.filter(v=>v.days<=7).length, amb=list.filter(v=>v.days>7&&v.days<=30).length;
   return `<div class="kpis">
@@ -1061,7 +1069,8 @@ function renderLeads(){
 
 // ---------------- CITAS ----------------
 function renderCitas(){
-  const list=[...DB.citas].sort((a,b)=>(a.fecha+'' ).localeCompare(b.fecha+''));
+  const q=searchQ.toLowerCase();
+  const list=[...DB.citas].filter(c=>!q||clienteName(c.clienteId).toLowerCase().includes(q)).sort((a,b)=>(a.fecha+'' ).localeCompare(b.fecha+''));
   return `<div class="card"><h3>📅 Agenda de citas</h3>
   ${list.length?`<table><thead><tr><th>Fecha</th><th>Hora</th><th>Cliente</th><th>Motivo</th><th>Cuándo</th><th>Acciones</th></tr></thead><tbody>
   ${list.map(c=>{const d=daysTo(c.fecha);return `<tr>
@@ -1084,6 +1093,7 @@ function renderRecord(){
     if(c.fechaCita){ const dd=daysTo(c.fechaCita); if(dd!==null&&dd>=0&&dd<=30) items.push({casoId:c.id,cliente:clienteName(c.clienteId),tipo:c.tipo,tel:clientePhone(c.clienteId),kind:'cita',dd,detalle:'Cita el '+c.fechaCita}); }
   });
   DB.pagos.filter(p=>p.estado==='Pendiente').forEach(p=>{ const c=DB.casos.find(x=>x.id===p.casoId); if(!c||c.estado==='Rechazado')return; items.push({casoId:c.id,cliente:clienteName(c.clienteId),tipo:c.tipo,tel:clientePhone(c.clienteId),kind:'cobro',pagoId:p.id,dd:999,detalle:'Cobro pendiente: '+money(p.monto)}); });
+  const q=searchQ.toLowerCase(); if(q){ for(let i=items.length-1;i>=0;i--) if(!items[i].cliente.toLowerCase().includes(q)) items.splice(i,1); }
   items.sort((a,b)=>a.dd-b.dd);
   return `<div class="card"><h3>📨 Secuencias automáticas de recordatorios</h3>
     <p class="hint">El sistema arma la cola de recordatorios de <b>citas</b> (30/15/7/1 días antes) y de <b>cobros pendientes</b>. Envía cada uno por WhatsApp con un clic — el mensaje ya viene escrito.</p></div>
@@ -1099,7 +1109,8 @@ function renderRecord(){
 
 // ---------------- RENOVACIONES ----------------
 function renderRenov(){
-  const list=DB.casos.filter(c=>c.estado==='Aprobado').map(c=>({c,fecha:renewalDate(c)})).filter(x=>x.fecha).sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  const q=searchQ.toLowerCase();
+  const list=DB.casos.filter(c=>c.estado==='Aprobado').map(c=>({c,fecha:renewalDate(c)})).filter(x=>x.fecha && (!q||clienteName(x.c.clienteId).toLowerCase().includes(q))).sort((a,b)=>a.fecha.localeCompare(b.fecha));
   return `<div class="card"><h3>🔁 Radar de renovaciones</h3>
     <p class="hint">Cuando un caso se aprueba, el sistema calcula cuándo toca renovar (residencia, visa, etc.) para que recuperes al cliente a tiempo. Nuevo trámite = nuevo ingreso.</p></div>
     ${list.length?`<div class="card" style="padding:6px 0"><table><thead><tr><th style="padding-left:18px">Cliente</th><th>Trámite</th><th>Aprobado</th><th>Renovar antes de</th><th>Faltan</th><th style="text-align:right;padding-right:18px">Acción</th></tr></thead><tbody>
@@ -1270,7 +1281,7 @@ function openCaso(id){
   modal(`<div class="mh"><h3>${id?'Editar':'Nuevo'} caso</h3><button class="x" onclick="closeModal()">✕</button></div>
   <div class="mb">
     <div class="frow"><div class="fg"><label>Cliente *</label><select id="caCliente">${DB.clientes.map(x=>`<option value="${x.id}" ${c.clienteId===x.id?'selected':''}>${esc(x.nombre)}</option>`).join('')}</select></div>
-    <div class="fg"><label>Tipo de trámite *</label><select id="caTipo">${Object.keys(TRAMITES).map(t=>`<option ${c.tipo===t?'selected':''}>${t}</option>`).join('')}</select></div></div>
+    <div class="fg"><label>Tipo de trámite *</label><select id="caTipo">${Object.keys(getTramites()).map(t=>`<option ${c.tipo===t?'selected':''}>${esc(t)}</option>`).join('')}</select></div></div>
     <div class="frow3"><div class="fg"><label>País destino</label><input id="caDestino" value="${esc(c.destino||'')}"></div>
     <div class="fg"><label>N° de expediente</label><input id="caExp" value="${esc(c.expediente||'')}"></div>
     <div class="fg"><label>Estado</label><select id="caEstado">${ESTADOS.map(e=>`<option ${((c.estado||'Consulta')===e.k)?'selected':''}>${e.k}</option>`).join('')}</select></div></div>
@@ -1288,11 +1299,11 @@ function saveCaso(id){
     fechaLimite:$('#caLimite').value,prioridad:$('#caPrio').value,notas:$('#caNotas').value.trim()};
   if(id){const caso=DB.casos.find(x=>x.id===id);
     // si cambió el tipo, ofrecer regenerar docs faltantes
-    if(caso.tipo!==data.tipo){ (TRAMITES[data.tipo]||[]).forEach(req=>{ if(!caso.docs.some(d=>d.req===req)) caso.docs.push({req,estado:'Pendiente'}); }); }
+    if(caso.tipo!==data.tipo){ getTramiteDocs(data.tipo).forEach(req=>{ if(!caso.docs.some(d=>d.req===req)) caso.docs.push({req,estado:'Pendiente'}); }); }
     Object.assign(caso,data);
   } else {
     data.id=uid();data.creado=today();
-    data.docs=(TRAMITES[data.tipo]||[]).map(req=>({req,estado:'Pendiente',vence:'',archivo:null}));
+    data.docs=getTramiteDocs(data.tipo).map(req=>({req,estado:'Pendiente',vence:'',archivo:null}));
     DB.casos.push(data);
   }
   save();closeModal();render();toast('Caso guardado');
@@ -1365,22 +1376,18 @@ function tabTiempo(c){
     <p class="hint" style="margin-top:6px">📌 Resolución estimada: <b>${esc(fechaLarga(steps[steps.length-1].date))}</b></p></div>`;
 }
 function tabCartas(c){
-  return `<div class="card" style="background:var(--bg)"><b>📄 Generar documentos con tu marca (PDF)</b>
-    <p class="hint">Se abre el diálogo de impresión → elige “Guardar como PDF” o imprime.</p>
+  const keys=Object.keys(DB.plantillas||DEFAULT_PLANTILLAS);
+  return `<div class="card" style="background:var(--bg)"><b>📄 Generar documentos con tu marca</b>
+    <p class="hint">Vista previa editable → descarga PNG/PDF o imprime.</p>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
-      <button class="btn letter-btn" onclick="genLetter('contrato','${c.id}')">Contrato de servicios<small>Acuerdo asesor–cliente</small></button>
-      <button class="btn letter-btn" onclick="genLetter('cover','${c.id}')">Cover letter consular<small>Carta de presentación del caso</small></button>
-      <button class="btn letter-btn" onclick="genLetter('invitacion','${c.id}')">Carta de invitación<small>Anfitrión en el destino</small></button>
-      <button class="btn letter-btn" onclick="genLetter('sustento','${c.id}')">Carta de sustento económico<small>Solvencia del solicitante</small></button>
-      <button class="btn letter-btn" onclick="genLetter('jurada','${c.id}')">Declaración jurada<small>Declaración de veracidad</small></button>
-      <button class="btn letter-btn" onclick="genLetter('poder','${c.id}')">Carta poder<small>Autoriza a representarte</small></button>
+      ${keys.map(k=>`<button class="btn letter-btn" onclick="genLetter('${k}','${c.id}')">${esc((DB.plantillas[k]||{}).nombre||k)}<small>Documento</small></button>`).join('')}
     </div></div>
     <div class="card" style="background:var(--bg)"><b>📚 Expediente maestro</b>
       <p class="hint">Un solo PDF con portada, resumen, checklist y las imágenes adjuntas del caso.</p>
       <button class="btn gold" onclick="expedienteMaestro('${c.id}')">📚 Generar expediente maestro (PDF)</button></div>`;
 }
 function tabEntrevista(c){
-  const qs=INTERVIEW[c.tipo]||INTERVIEW['_'];
+  const qs=getInterview(c.tipo);
   return `<div class="card" style="background:var(--bg)"><b>🎤 Preparación de entrevista consular</b>
     <p class="hint">Preguntas típicas para este tipo de trámite. Practica con el cliente o imprime el simulacro.</p>
     <ol style="margin:10px 0 0 18px">${qs.map(q=>`<li style="margin-bottom:8px">${esc(q)}</li>`).join('')}</ol>
@@ -1579,7 +1586,7 @@ function loadDemo(){
   const nombres=['María Fernández','José Rodríguez','Ana Martínez','Luis García','Carmen Sánchez','Pedro Jiménez','Rosa Díaz','Miguel Reyes','Laura Peña','Carlos Herrera','Juana Castillo','Rafael Núñez','Yderlinda Paulino','Franklin Mejía','Altagracia Ramírez','Wilkin de la Cruz','Scarlet Ureña','Ramón Batista','Yolanda Guzmán','Héctor Polanco','Massiel Encarnación','Domingo Feliz','Katiuska Peralta','Ambiorix Santana','Yohanna Rosario','Elvis Cabrera','Nurys Valdez','Génesis Morel','Starling Abreu','Deivi Fernández','Marilyn Contreras','Junior Beltré','Esperanza Vólquez','Frailyn Tavárez'];
   const paises=['República Dominicana','Venezuela','Colombia','Haití','Cuba','Perú','México','España','Ecuador'];
   const destinos=['Estados Unidos','España','Canadá','Chile','México','Panamá','Italia'];
-  const tipos=Object.keys(TRAMITES);
+  const tipos=Object.keys(getTramites());
   const estadosK=ESTADOS.map(e=>e.k);
   DB.clientes=[];DB.casos=[];DB.pagos=[];DB.leads=[];DB.citas=[];DB.bitacora=[];
   nombres.forEach(nm=>{
@@ -1588,7 +1595,7 @@ function loadDemo(){
     const nCasos=Math.random()<0.35?2:1;
     for(let k=0;k<nCasos;k++){
       const tipo=rnd(tipos), estado=rnd(estadosK);
-      const docs=(TRAMITES[tipo]||[]).map(req=>{const r=Math.random();return {req,estado:r<0.5?'Recibido':(r<0.6?'Verificado':'Pendiente'),vence:Math.random()<0.15?dISO(ri(-6,70)):'',archivo:null};});
+      const docs=getTramiteDocs(tipo).map(req=>{const r=Math.random();return {req,estado:r<0.5?'Recibido':(r<0.6?'Verificado':'Pendiente'),vence:Math.random()<0.15?dISO(ri(-6,70)):'',archivo:null};});
       const caso={id:uid(),clienteId:cid,tipo,destino:rnd(destinos),expediente:Math.random()<0.65?('EXP-'+ri(10000,99999)):'',
         estado,prioridad:rnd(['Normal','Normal','Alta','Urgente']),
         fechaCita:Math.random()<0.6?dISO(ri(-3,45)):'', fechaLimite:Math.random()<0.6?dISO(ri(-5,60)):'',
@@ -1714,27 +1721,45 @@ function logout(){ session=null; closeModal(); showAuth(); }
 // ============================================================================
 //  PLANTILLAS (solo administrador)
 // ============================================================================
-let tplSel='contrato';
+let tplSel='contrato', adminTab='docs', tramiteSel=null, entSel=null;
+function setAdminTab(t){ adminTab=t; render(); }
 function renderPlantillas(){
   if(!isAdmin()) return emptyState('🔒','Solo administrador','Esta sección es exclusiva del administrador.');
-  const pl=getPlantilla(tplSel);
-  return `<div class="card"><h3>📝 Plantillas de documentos</h3>
-    <p class="hint" style="margin-bottom:12px">Editas el <b>modelo</b> de cada documento. Los usuarios solo lo generan y llenan los datos del cliente (no pueden cambiar la plantilla).</p>
-    <div class="tpl-tabs">${PLANTILLA_ORDEN.map(k=>`<button class="${tplSel===k?'on':''}" onclick="tplSelect('${k}')">${esc((getPlantilla(k)||{}).nombre||k)}</button>`).join('')}</div>
+  const sub={docs:tplDocs,tramites:tplTramites,entrevistas:tplEntrevistas}[adminTab]||tplDocs;
+  return `<div class="card"><h3>📝 Plantillas y formularios</h3>
+    <p class="hint" style="margin-bottom:12px">Personaliza <b>todo</b> lo que la app genera, sin depender del desarrollador: documentos, el checklist de cada trámite y las preguntas de entrevista.</p>
+    <div class="ctabs" style="margin-bottom:16px">
+      <button class="${adminTab==='docs'?'on':''}" onclick="setAdminTab('docs')">📄 Documentos</button>
+      <button class="${adminTab==='tramites'?'on':''}" onclick="setAdminTab('tramites')">🗂️ Trámites y checklist</button>
+      <button class="${adminTab==='entrevistas'?'on':''}" onclick="setAdminTab('entrevistas')">🎤 Entrevistas</button>
+    </div>
+    ${sub()}</div>`;
+}
+// --- Sub-pestaña: Documentos (cartas/contratos, editables + agregar/eliminar) ---
+function tplDocs(){
+  const keys=Object.keys(DB.plantillas||{}); if(!keys.length) return '<p class="hint">Sin plantillas.</p>';
+  if(!keys.includes(tplSel)) tplSel=keys[0];
+  const pl=getPlantilla(tplSel)||{nombre:'',cuerpo:''}; const isBase=!!DEFAULT_PLANTILLAS[tplSel];
+  return `<div class="tpl-tabs">
+      ${keys.map(k=>`<button class="${tplSel===k?'on':''}" onclick="tplSelect('${k}')">${esc((DB.plantillas[k]||{}).nombre||k)}</button>`).join('')}
+      <button onclick="tplNuevo()" style="border-style:dashed;color:var(--gold2)">＋ Nuevo documento</button>
+    </div>
     <div class="fg"><label>Título del documento</label><input id="tplNombre" value="${esc(pl.nombre)}"></div>
-    <label class="mini" style="display:block;margin-bottom:2px">Cuerpo — inserta datos dinámicos con estos botones (se reemplazan al generar):</label>
+    <label class="mini" style="display:block;margin-bottom:2px">Cuerpo — inserta datos dinámicos (se reemplazan al generar):</label>
     <div class="tpl-tokens">${TOKENS_INFO.map(t=>`<button title="${esc(t[1])}" onclick="tplInsert('${t[0]}')">${esc(t[0])}</button>`).join('')}</div>
     <div class="tpl-edit" id="tplBody" contenteditable="true">${pl.cuerpo}</div>
     <div class="wa-menu" style="margin-top:14px">
-      <button class="btn gold" onclick="tplSave()">💾 Guardar plantilla</button>
-      <button class="btn" onclick="tplPreview()">👁️ Vista previa (datos de ejemplo)</button>
-      <button class="btn red" onclick="tplReset()">↺ Restaurar original</button>
-    </div></div>`;
+      <button class="btn gold" onclick="tplSave()">💾 Guardar</button>
+      <button class="btn" onclick="tplPreview()">👁️ Vista previa</button>
+      ${isBase?`<button class="btn" onclick="tplReset()">↺ Restaurar original</button>`:`<button class="btn red" onclick="tplDelete()">🗑️ Eliminar</button>`}
+    </div>`;
 }
 function tplSelect(k){ tplSel=k; render(); }
 function tplInsert(tok){ const el=$('#tplBody'); if(!el)return; el.focus(); try{ document.execCommand('insertText',false,tok); }catch(e){ el.innerHTML+=' '+tok; } }
-function tplSave(){ if(!DB.plantillas)DB.plantillas={}; DB.plantillas[tplSel]={nombre:$('#tplNombre').value.trim()||tplSel, cuerpo:$('#tplBody').innerHTML}; save(); toast('Plantilla guardada ✓'); }
-function tplReset(){ if(!confirm('¿Restaurar esta plantilla al texto original de fábrica?'))return; if(!DB.plantillas)DB.plantillas={}; DB.plantillas[tplSel]=JSON.parse(JSON.stringify(DEFAULT_PLANTILLAS[tplSel])); save(); render(); toast('Plantilla restaurada'); }
+function tplSave(){ if(!DB.plantillas)DB.plantillas={}; DB.plantillas[tplSel]={nombre:$('#tplNombre').value.trim()||tplSel, cuerpo:$('#tplBody').innerHTML}; save(); render(); toast('Documento guardado ✓'); }
+function tplReset(){ if(!confirm('¿Restaurar esta plantilla al texto original de fábrica?'))return; DB.plantillas[tplSel]=JSON.parse(JSON.stringify(DEFAULT_PLANTILLAS[tplSel])); save(); render(); toast('Plantilla restaurada'); }
+function tplNuevo(){ promptModal('Nuevo documento','Nombre del documento','',v=>{ v=(v||'').trim(); if(!v)return; const key='custom_'+uid(); if(!DB.plantillas)DB.plantillas={}; DB.plantillas[key]={nombre:v,cuerpo:'<p>Escribe aquí el contenido del documento. Usa los botones de datos, por ejemplo {{cliente}} y {{tipo}}.</p>\n{{firma}}'}; tplSel=key; save(); render(); toast('Documento creado'); }); }
+function tplDelete(){ if(!confirm('¿Eliminar este documento?'))return; delete DB.plantillas[tplSel]; tplSel=Object.keys(DB.plantillas)[0]||''; save(); render(); toast('Documento eliminado'); }
 function tplPreview(){
   const demoC={tipo:'Visa de Trabajo',destino:'Estados Unidos',expediente:'EXP-12345',id:'_demo_'};
   const demoCli={nombre:'Juan Pérez',documento:'001-1234567-8',pais:'República Dominicana'};
@@ -1742,6 +1767,44 @@ function tplPreview(){
   const body=applyTokens($('#tplBody').innerHTML, tokenMap(demoC,demoCli));
   previewDoc(`${docHeader()}<p style="text-align:right">${fechaLarga()}</p><h2>${esc(nombre)}</h2>${body}`, nombre);
 }
+// --- Sub-pestaña: Trámites y su checklist de documentos ---
+function tplTramites(){
+  const keys=Object.keys(getTramites()); if(!keys.length){ tramiteSel=null; }
+  if(!tramiteSel||!keys.includes(tramiteSel)) tramiteSel=keys[0];
+  const docs=(getTramites()[tramiteSel]||[]).join('\n');
+  return `<div class="tpl-tabs">
+      ${keys.map((k,i)=>`<button class="${tramiteSel===k?'on':''}" onclick="tramSelectIdx(${i})">${esc(k)}</button>`).join('')}
+      <button onclick="tramNuevo()" style="border-style:dashed;color:var(--gold2)">＋ Nuevo trámite</button>
+    </div>
+    <p class="hint">Documentos que se cargan automáticamente en el checklist de este trámite — <b>uno por línea</b>:</p>
+    <textarea id="tramDocs" rows="10" style="width:100%;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:11px 13px;color:var(--txt);font-size:13px">${esc(docs)}</textarea>
+    <div class="wa-menu" style="margin-top:12px">
+      <button class="btn gold" onclick="tramSave()">💾 Guardar</button>
+      <button class="btn" onclick="tramRename()">✏️ Renombrar</button>
+      <button class="btn red" onclick="tramDelete()">🗑️ Eliminar trámite</button>
+    </div>
+    <p class="hint" style="margin-top:10px">💡 Los cambios aplican a los <b>casos nuevos</b> de este trámite.</p>`;
+}
+function tramSelectIdx(i){ tramiteSel=Object.keys(getTramites())[i]; render(); }
+function tramSave(){ const arr=($('#tramDocs').value||'').split('\n').map(s=>s.trim()).filter(Boolean); DB.tramites[tramiteSel]=arr; save(); toast('Trámite guardado ✓'); }
+function tramNuevo(){ promptModal('Nuevo tipo de trámite','Ej. Visa de Inversionista','',v=>{ v=(v||'').trim(); if(!v)return; if(DB.tramites[v])return toast('Ya existe'); DB.tramites[v]=['Pasaporte vigente','Foto','Formulario']; tramiteSel=v; save(); render(); toast('Trámite creado'); }); }
+function tramRename(){ promptModal('Renombrar trámite','',tramiteSel,v=>{ v=(v||'').trim(); if(!v||v===tramiteSel)return; if(DB.tramites[v])return toast('Ya existe'); DB.tramites[v]=DB.tramites[tramiteSel]; delete DB.tramites[tramiteSel]; tramiteSel=v; save(); render(); }); }
+function tramDelete(){ if(Object.keys(getTramites()).length<=1)return toast('Debe quedar al menos un trámite'); if(!confirm('¿Eliminar este tipo de trámite?'))return; delete DB.tramites[tramiteSel]; tramiteSel=Object.keys(DB.tramites)[0]; save(); render(); toast('Trámite eliminado'); }
+// --- Sub-pestaña: Preguntas de entrevista por trámite ---
+function tplEntrevistas(){
+  const trkeys=Object.keys(getTramites()); const keys=[...trkeys,'_'];
+  if(!entSel||!keys.includes(entSel)) entSel=keys[0];
+  const src=(DB.entrevistas&&DB.entrevistas[entSel])||INTERVIEW[entSel]||(entSel==='_'?INTERVIEW['_']:[]);
+  const qs=(src||[]).join('\n');
+  return `<div class="tpl-tabs">
+      ${keys.map((k,i)=>`<button class="${entSel===k?'on':''}" onclick="entSelectIdx(${i})">${k==='_'?'General / otros':esc(k)}</button>`).join('')}
+    </div>
+    <p class="hint">Preguntas del simulacro de entrevista para <b>${entSel==='_'?'trámites sin lista propia':esc(entSel)}</b> — <b>una por línea</b>:</p>
+    <textarea id="entQs" rows="10" style="width:100%;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:11px 13px;color:var(--txt);font-size:13px">${esc(qs)}</textarea>
+    <div class="wa-menu" style="margin-top:12px"><button class="btn gold" onclick="entSave()">💾 Guardar</button></div>`;
+}
+function entSelectIdx(i){ const keys=[...Object.keys(getTramites()),'_']; entSel=keys[i]; render(); }
+function entSave(){ const arr=($('#entQs').value||'').split('\n').map(s=>s.trim()).filter(Boolean); if(!DB.entrevistas)DB.entrevistas={}; DB.entrevistas[entSel]=arr; save(); toast('Entrevista guardada ✓'); }
 
 // ============================================================================
 //  USUARIOS (solo administrador)
