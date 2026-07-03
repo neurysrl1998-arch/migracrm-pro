@@ -248,6 +248,13 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .pw-wrap input{width:100%;padding-right:40px}
 .pw-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:15px;padding:4px 6px;opacity:.7;cursor:pointer}
 .pw-eye:hover{opacity:1}
+/* Switch Asesor / Administrador */
+.role-switch{position:relative;display:flex;background:var(--bg);border:1px solid var(--line);border-radius:13px;padding:5px;margin:4px auto 20px;width:290px;box-shadow:inset 0 2px 8px rgba(0,0,0,.25)}
+.role-switch .slider{position:absolute;top:5px;left:5px;width:calc(50% - 5px);height:calc(100% - 10px);background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:9px;box-shadow:0 4px 14px rgba(217,180,91,.4);transition:transform .34s cubic-bezier(.5,1.4,.5,1);z-index:1}
+.role-switch.admin .slider{transform:translateX(100%)}
+.role-switch button{flex:1;position:relative;z-index:2;background:none;border:none;color:var(--mut);font-weight:700;font-size:13px;padding:9px 0;border-radius:9px;transition:color .25s;display:flex;align-items:center;justify-content:center;gap:6px}
+.role-switch button.on{color:#241c05}
+.pick-empty{width:100%;text-align:center;color:var(--mut2);font-size:13px;padding:22px 10px}
 /* Selector de perfiles */
 .pick-title{font-size:14px;color:var(--mut);margin-bottom:16px}
 .pick-grid{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
@@ -381,7 +388,7 @@ if (!window.api) {
     exportSave:  (name, content) => { const b=new Blob([content],{type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name; a.click(); return name; },
     openBackups: () => alert('La carpeta de respaldos está disponible en la app de escritorio.'),
     paths:       () => ({ data:'(navegador)', backups:'(navegador)', adjuntos:'(navegador)' }),
-    version:     () => '1.6.0',
+    version:     () => '1.7.0',
     onUpdateStatus: () => {},
     updateInstall:  () => {},
     updateCheck:    () => {}
@@ -1638,16 +1645,25 @@ function doSetup(){
   session=DB.usuarios[DB.usuarios.length-1]; enterApp();
 }
 
-// Selector de cuenta (perfiles)
+// Selector de cuenta (perfiles) con switch Asesor / Administrador
+let pickRole='asesor';
+function setPickRole(r){ pickRole=r; renderPicker(); }
 function renderPicker(){
   loginCard(true);
-  const cards=DB.usuarios.map(u=>`<div class="pick" onclick="selectProfile('${u.id}')">
+  const isAd = pickRole==='admin';
+  const list = DB.usuarios.filter(u=> isAd ? u.rol==='admin' : u.rol!=='admin');
+  const cards = list.map(u=>`<div class="pick" onclick="selectProfile('${u.id}')">
     <div class="pav">${esc(avIni(u.nombre))}</div><div class="pn">${esc(u.nombre)}</div><div class="pr">${roleLabel(u.rol)}</div></div>`).join('');
+  const addCard = !isAd ? `<div class="pick add" onclick="showAddAdvisor()"><div class="pav">＋</div><div class="pn">Agregar asesor</div><div class="pr">&nbsp;</div></div>` : '';
+  const empty = (!list.length) ? `<div class="pick-empty">${isAd?'No hay administradores.':'Aún no hay asesores. Agrega el primero 👇'}</div>` : '';
   $('#loginBody').innerHTML=`
-    <div class="pick-title">Elige tu cuenta para continuar</div>
-    <div class="pick-grid">${cards}
-      <div class="pick add" onclick="showAddAdvisor()"><div class="pav">＋</div><div class="pn">Agregar asesor</div><div class="pr">&nbsp;</div></div>
-    </div>`;
+    <div class="role-switch ${isAd?'admin':''}">
+      <div class="slider"></div>
+      <button class="${!isAd?'on':''}" onclick="setPickRole('asesor')">👤 Asesor</button>
+      <button class="${isAd?'on':''}" onclick="setPickRole('admin')">👑 Administrador</button>
+    </div>
+    <div class="pick-title">${isAd?'Cuentas de administrador':'Elige tu cuenta de asesor'}</div>
+    <div class="pick-grid">${empty}${cards}${addCard}</div>`;
 }
 function selectProfile(id){
   const u=DB.usuarios.find(x=>x.id===id); if(!u)return; loginCard(false);
