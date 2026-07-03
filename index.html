@@ -268,6 +268,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 </div>
 
 <div class="overlay" id="ov"><div class="modal" id="mod"></div></div>
+<div class="overlay" id="ov2" style="z-index:130"><div class="modal" id="mod2" style="width:440px"></div></div>
 <div class="toast" id="toast"></div>
 <div id="upd-banner"></div>
 <div id="printdoc"></div>
@@ -293,7 +294,7 @@ if (!window.api) {
     exportSave:  (name, content) => { const b=new Blob([content],{type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name; a.click(); return name; },
     openBackups: () => alert('La carpeta de respaldos está disponible en la app de escritorio.'),
     paths:       () => ({ data:'(navegador)', backups:'(navegador)', adjuntos:'(navegador)' }),
-    version:     () => '1.4.0',
+    version:     () => '1.4.1',
     onUpdateStatus: () => {},
     updateInstall:  () => {},
     updateCheck:    () => {}
@@ -1110,14 +1111,35 @@ function modal(html,wide){ const m=$('#mod'); m.className='modal'+(wide?' wide':
 function closeModal(){ $('#ov').classList.remove('on'); }
 $('#ov').addEventListener('click',e=>{if(e.target.id==='ov')closeModal();});
 
+// Diálogo pequeño de entrada (reemplaza al prompt() del navegador, que Electron no soporta)
+let _promptCb=null;
+function promptModal(title,placeholder,value,cb,inputType){
+  _promptCb=cb; const t=inputType||'text';
+  const field = t==='textarea'
+    ? `<textarea id="pmInput" rows="3" style="width:100%;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:10px;color:var(--txt)">${esc(value||'')}</textarea>`
+    : `<input id="pmInput" type="${t}" value="${esc(value||'')}" placeholder="${esc(placeholder||'')}" style="width:100%;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:10px 12px;color:var(--txt)">`;
+  $('#mod2').innerHTML=`<div class="mh"><h3>${esc(title)}</h3><button class="x" onclick="closePrompt()">✕</button></div>
+    <div class="mb">${field}</div>
+    <div class="mf"><button class="btn ghost" onclick="closePrompt()">Cancelar</button><button class="btn gold" onclick="submitPrompt()">Aceptar</button></div>`;
+  $('#ov2').classList.add('on');
+  setTimeout(()=>{ const i=$('#pmInput'); if(i){ i.focus(); i.onkeydown=e=>{ if(e.key==='Enter'&&t!=='textarea')submitPrompt(); if(e.key==='Escape')closePrompt(); }; } },30);
+}
+function closePrompt(){ $('#ov2').classList.remove('on'); _promptCb=null; }
+function submitPrompt(){ const v=$('#pmInput')?$('#pmInput').value:''; const cb=_promptCb; $('#ov2').classList.remove('on'); _promptCb=null; if(cb)cb(v); }
+$('#ov2').addEventListener('click',e=>{if(e.target.id==='ov2')closePrompt();});
+
 // ---- Cliente ----
 function openCliente(id){
   const c=id?DB.clientes.find(x=>x.id===id):{};
   modal(`<div class="mh"><h3>${id?'Editar':'Nuevo'} cliente</h3><button class="x" onclick="closeModal()">✕</button></div>
   <div class="mb">
     <div style="margin-bottom:14px;padding:12px;background:var(--bg);border:1px solid var(--line);border-radius:9px">
-      <button class="btn" type="button" onclick="scanMRZ()">🛂 Escanear pasaporte (MRZ)</button>
-      <div class="hint" style="margin-top:6px">Autollena nombre, documento y país leyendo las 2 líneas de códigos (&lt;&lt;&lt;) del pasaporte.</div>
+      <button class="btn" type="button" onclick="toggleMRZ()">🛂 Escanear pasaporte (MRZ)</button>
+      <div class="hint" style="margin-top:6px">Autollena nombre, documento y país con las 2 líneas de códigos (&lt;&lt;&lt;) del final del pasaporte.</div>
+      <div id="mrzBox" style="display:none;margin-top:10px">
+        <textarea id="mrzInput" rows="2" placeholder="Pega aquí las 2 líneas MRZ del pasaporte…" style="width:100%;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px;color:var(--txt);font-family:monospace;font-size:12px"></textarea>
+        <button class="btn gold sm" type="button" style="margin-top:6px" onclick="readMRZInline()">Leer datos</button>
+      </div>
     </div>
     <div class="fg"><label>Nombre completo *</label><input id="clNombre" value="${esc(c.nombre||'')}"></div>
     <div class="frow"><div class="fg"><label>Teléfono (con código país)</label><input id="clTel" placeholder="1809..." value="${esc(c.telefono||'')}"></div>
@@ -1150,15 +1172,16 @@ function parseMRZ(raw){
   const fmt=(y,exp)=>{ if(!/^\d{6}$/.test(y))return ''; const yy=+y.slice(0,2); const year=exp?2000+yy:(yy>30?1900+yy:2000+yy); return year+'-'+y.slice(2,4)+'-'+y.slice(4,6); };
   return {nombre,documento,nacionalidad:nac,nacimiento:fmt(l2.slice(13,19),false),expira:fmt(l2.slice(21,27),true)};
 }
-function scanMRZ(){
-  const raw=prompt('Pega las 2 líneas de códigos (MRZ) del pasaporte:\n(la zona con < < < al final de la página de datos)');
-  if(!raw)return; const m=parseMRZ(raw);
-  if(!m||!m.documento){ toast('No pude leer el MRZ. Copia las 2 líneas completas.'); return; }
+function toggleMRZ(){ const b=$('#mrzBox'); if(!b)return; b.style.display=b.style.display==='none'?'block':'none'; if(b.style.display!=='none'){ const t=$('#mrzInput'); if(t)t.focus(); } }
+function readMRZInline(){
+  const raw=$('#mrzInput')?$('#mrzInput').value:''; const m=parseMRZ(raw);
+  if(!m||!m.documento){ toast('No pude leer el MRZ. Pega las 2 líneas completas.'); return; }
   if($('#clNombre')&&m.nombre)$('#clNombre').value=m.nombre;
   if($('#clDoc'))$('#clDoc').value=m.documento;
   if($('#clPais')&&m.nacionalidad)$('#clPais').value=m.nacionalidad;
   const extra=`Pasaporte ${m.documento}${m.nacimiento?' · Nac: '+m.nacimiento:''}${m.expira?' · Vence: '+m.expira:''}`;
   if($('#clNota'))$('#clNota').value=($('#clNota').value?$('#clNota').value+'\n':'')+extra;
+  const b=$('#mrzBox'); if(b)b.style.display='none';
   toast('Datos del pasaporte cargados ✓');
 }
 
@@ -1310,8 +1333,10 @@ function docRow(casoId,i,d){
 }
 function toggleDoc(casoId,i){const c=DB.casos.find(x=>x.id===casoId);const d=c.docs[i];d.estado=(d.estado==='Recibido'||d.estado==='Verificado')?'Pendiente':'Recibido';save();openCasoDetail(casoId);}
 async function attachDoc(casoId,i){const f=await window.api.attachFile();if(f){const c=DB.casos.find(x=>x.id===casoId);c.docs[i].archivo=f;if(c.docs[i].estado==='Pendiente')c.docs[i].estado='Recibido';save();openCasoDetail(casoId);toast('Archivo adjuntado');}}
-function docVence(casoId,i){const c=DB.casos.find(x=>x.id===casoId);const v=prompt('Fecha de vencimiento del documento (AAAA-MM-DD):',c.docs[i].vence||'');if(v!==null){c.docs[i].vence=v.trim();save();openCasoDetail(casoId);}}
-function addDoc(casoId){const n=prompt('Nombre del documento:');if(n){DB.casos.find(x=>x.id===casoId).docs.push({req:n.trim(),estado:'Pendiente',vence:'',archivo:null});save();openCasoDetail(casoId);}}
+function docVence(casoId,i){ const c=DB.casos.find(x=>x.id===casoId);
+  promptModal('Fecha de vencimiento del documento','',c.docs[i].vence||'',v=>{ c.docs[i].vence=(v||'').trim(); save(); openCasoDetail(casoId); },'date'); }
+function addDoc(casoId){
+  promptModal('Nuevo documento','Nombre del documento','',v=>{ v=(v||'').trim(); if(!v)return; DB.casos.find(x=>x.id===casoId).docs.push({req:v,estado:'Pendiente',vence:'',archivo:null}); save(); openCasoDetail(casoId); }); }
 function rmDoc(casoId,i){const c=DB.casos.find(x=>x.id===casoId);c.docs.splice(i,1);save();openCasoDetail(casoId);}
 
 // ---- Pago ----

@@ -1,6 +1,6 @@
 {
   "name": "migracrm-pro",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Sistema de gestion para asesores migratorios - offline, base de datos local, WhatsApp y reportes",
   "main": "main.js",
   "author": "Elite Trading Group",
