@@ -173,8 +173,61 @@ tr:hover td{background:rgba(255,255,255,.02)}
 #upd-banner .pbar2{flex:1;height:7px;background:#26314d;border-radius:5px;overflow:hidden}
 #upd-banner .pbar2 i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));width:0}
 .mini{font-size:11px;color:var(--mut2)}
+/* ---------- Pestañas del caso ---------- */
+.ctabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin-bottom:16px}
+.ctabs button{padding:9px 13px;background:transparent;color:var(--mut);font-size:13px;font-weight:600;border-bottom:2px solid transparent;border-radius:8px 8px 0 0}
+.ctabs button:hover{color:var(--txt)}
+.ctabs button.on{color:var(--gold2);border-bottom-color:var(--gold)}
+/* Medidor de elegibilidad */
+.gauge{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.ring{position:relative;width:130px;height:130px;flex:0 0 auto}
+.ring svg{transform:rotate(-90deg)}
+.ring .rt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring .rt b{font-size:30px;line-height:1}
+.ring .rt span{font-size:11px;color:var(--mut)}
+.eq{margin-bottom:14px}
+.eq label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+.eq .opts{display:flex;gap:8px;flex-wrap:wrap}
+.eq .opts button{padding:7px 12px;border-radius:8px;background:var(--panel);border:1px solid var(--line);color:var(--mut);font-size:12px;font-weight:600}
+.eq .opts button.on{border-color:var(--gold);color:var(--gold2);background:rgba(217,180,91,.12)}
+.weak{background:rgba(255,106,106,.08);border:1px solid #5a2b30;border-radius:9px;padding:10px 12px;margin-top:4px}
+.weak li{margin-left:16px;font-size:13px;margin-bottom:4px;color:#ffb0b0}
+/* Línea de tiempo */
+.tl{position:relative;padding-left:26px;margin-top:8px}
+.tl::before{content:'';position:absolute;left:9px;top:6px;bottom:6px;width:2px;background:var(--line)}
+.tl .step{position:relative;padding:0 0 20px 8px}
+.tl .step::before{content:'';position:absolute;left:-21px;top:2px;width:16px;height:16px;border-radius:50%;background:var(--panel);border:3px solid var(--gold)}
+.tl .step.done::before{background:var(--green);border-color:var(--green)}
+.tl .step.now::before{background:var(--gold);box-shadow:0 0 0 4px rgba(217,180,91,.25)}
+.tl .step b{font-size:14px}
+.tl .step .d{font-size:12px;color:var(--mut)}
+/* Bitácora */
+.log-item{border-left:3px solid var(--gold);background:var(--panel);border-radius:0 9px 9px 0;padding:9px 12px;margin-bottom:8px}
+.log-item .t{font-size:11px;color:var(--mut2)}
+.letter-btn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:13px 15px}
+.letter-btn small{font-weight:400;color:var(--mut);font-size:11px}
+/* Documento imprimible */
+#printdoc{display:none}
+.doc-sheet{font-family:'Georgia',serif;color:#111;max-width:800px;margin:0 auto;padding:30px 40px;line-height:1.6}
+.doc-sheet .dh{display:flex;align-items:center;gap:16px;border-bottom:3px solid #16365c;padding-bottom:12px;margin-bottom:22px}
+.doc-sheet .dh .dl{width:72px;height:72px;flex:0 0 auto}
+.doc-sheet .dh .dl img{max-width:100%;max-height:100%;object-fit:contain}
+.doc-sheet .dh .dl svg{width:70px;height:70px}
+.doc-sheet .dh h1{font-size:22px;margin:0;color:#16365c;font-family:'Segoe UI',sans-serif}
+.doc-sheet .dh .ds{font-size:12px;color:#555}
+.doc-sheet h2{font-size:16px;color:#16365c;margin:18px 0 8px}
+.doc-sheet .sign{margin-top:60px}
+.doc-sheet .sign .line{border-top:1px solid #333;width:260px;padding-top:5px;font-size:13px}
+.doc-sheet table{width:100%;border-collapse:collapse;font-family:'Segoe UI',sans-serif;font-size:13px}
+.doc-sheet td,.doc-sheet th{border:1px solid #ccc;padding:7px 9px;text-align:left;color:#111}
+.doc-sheet .imgdoc{max-width:100%;border:1px solid #ccc;margin:8px 0;page-break-inside:avoid}
+.doc-sheet .pagebreak{page-break-before:always}
+
 @media print{ #side,#top,.mf,.noprint{display:none!important} #app{display:block} #view{overflow:visible;padding:0} body{background:#fff;color:#000} .card{border:1px solid #ccc}
-  #letterhead{display:block!important;padding:16px} .lh h2{color:#16365c} .lh .lh-sub,.lh .lh-meta{color:#444} .lh{border-color:#16365c} }
+  #letterhead{display:block!important;padding:16px} .lh h2{color:#16365c} .lh .lh-sub,.lh .lh-meta{color:#444} .lh{border-color:#16365c}
+  /* Modo documento: solo #printdoc */
+  body.printdoc-mode #app, body.printdoc-mode #letterhead, body.printdoc-mode #upd-banner, body.printdoc-mode .toast, body.printdoc-mode .overlay{display:none!important}
+  body.printdoc-mode #printdoc{display:block!important} }
 </style>
 </head>
 <body>
@@ -212,6 +265,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 <div class="overlay" id="ov"><div class="modal" id="mod"></div></div>
 <div class="toast" id="toast"></div>
 <div id="upd-banner"></div>
+<div id="printdoc"></div>
 
 <script>
 // ============================================================================
@@ -228,11 +282,12 @@ if (!window.api) {
     saveDB:      (c) => { localStorage.setItem('migracrm', c); return { ok:true }; },
     attachFile:  () => { alert('Adjuntar archivos solo está disponible en la app de escritorio.'); return null; },
     openFile:    () => {},
+    fileDataUrl: () => null,
     sendWhatsApp:(phone, text) => window.open('https://wa.me/' + String(phone||'').replace(/[^\d]/g,'') + '?text=' + encodeURIComponent(text||''), '_blank'),
     exportSave:  (name, content) => { const b=new Blob([content],{type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name; a.click(); return name; },
     openBackups: () => alert('La carpeta de respaldos está disponible en la app de escritorio.'),
     paths:       () => ({ data:'(navegador)', backups:'(navegador)', adjuntos:'(navegador)' }),
-    version:     () => '1.1.1',
+    version:     () => '1.2.0',
     onUpdateStatus: () => {},
     updateInstall:  () => {},
     updateCheck:    () => {}
@@ -289,6 +344,205 @@ function paintBrand(){
   if(lh)lh.innerHTML=`<div class="lh"><div class="lh-logo">${logoHTML()}</div>
     <div><h2>${esc(a.oficina||'MG Legal & Migration')}</h2><div class="lh-sub">Asesoría legal y migratoria${a.nombre?' · '+esc(a.nombre):''}</div></div>
     <div class="lh-meta">${esc(contacto)}<br>${new Date().toLocaleDateString('es-DO')}</div></div>`;
+}
+
+// ============================================================================
+//  MEJORAS PRO — constantes
+// ============================================================================
+const ELIG_QUESTIONS=[
+  {id:'fondos',  q:'Prueba de fondos económicos',                       w:20, tip:'Reforzar prueba de fondos: estados de cuenta de 3–6 meses con saldo estable.',            opts:[['Sólida',100],['Parcial',50],['Insuficiente',0]]},
+  {id:'arraigo', q:'Arraigo en el país de origen (trabajo, bienes, familia)', w:18, tip:'Documentar arraigo: carta de trabajo, títulos de propiedad, vínculos familiares.',      opts:[['Fuerte',100],['Medio',55],['Débil',10]]},
+  {id:'empleo',  q:'Empleo estable / ingresos demostrables',            w:15, tip:'Adjuntar carta de trabajo y comprobantes de ingresos formales.',                          opts:[['Sí',100],['Informal',55],['No',10]]},
+  {id:'rechazos',q:'Rechazos migratorios previos',                      w:15, tip:'Preparar carta explicando rechazos previos y evidencia de que la situación cambió.',      opts:[['Ninguno',100],['Uno explicable',55],['Varios',10]]},
+  {id:'docs',    q:'Documentación completa y en regla',                 w:12, tip:'Completar el checklist de documentos antes de enviar el caso.',                           opts:[['Completa',100],['Parcial',50],['Incompleta',0]]},
+  {id:'viajes',  q:'Historial de viajes previos',                       w:8,  tip:'Sin historial de viajes: reforzar arraigo y un motivo de viaje muy claro.',                opts:[['Bueno',100],['Limitado',60],['Ninguno',35]]},
+  {id:'motivo',  q:'Motivo del viaje claro y coherente',                w:7,  tip:'Definir un motivo de viaje claro, con itinerario o documentos de respaldo.',              opts:[['Muy claro',100],['Aceptable',60],['Confuso',20]]},
+  {id:'vinculos',q:'Soporte / vínculos en el país destino',             w:5,  tip:'Adjuntar carta de invitación o soporte del país destino si aplica.',                      opts:[['Sí',100],['Algunos',60],['No',40]]}
+];
+const TIMELINE={
+  'Visa de Turismo':{prep:15,cita:30,revision:15,resolucion:10},
+  'Visa de Trabajo':{prep:30,cita:45,revision:60,resolucion:30},
+  'Visa de Estudiante':{prep:25,cita:40,revision:30,resolucion:20},
+  'Residencia':{prep:45,cita:60,revision:120,resolucion:45},
+  'Reunificación Familiar':{prep:40,cita:60,revision:150,resolucion:60},
+  'Ciudadanía / Naturalización':{prep:30,cita:90,revision:180,resolucion:60},
+  'Renovación de estatus':{prep:15,cita:20,revision:30,resolucion:15},
+  'Asilo / Refugio':{prep:20,cita:60,revision:240,resolucion:90},
+  'Otro trámite':{prep:20,cita:30,revision:45,resolucion:20}
+};
+const RENEWAL_MONTHS={ 'Residencia':24,'Visa de Trabajo':12,'Visa de Estudiante':12,'Visa de Turismo':6,'Reunificación Familiar':24,'Ciudadanía / Naturalización':0,'Renovación de estatus':12,'Asilo / Refugio':0,'Otro trámite':12 };
+const INTERVIEW={
+  'Visa de Turismo':['¿Cuál es el propósito de su viaje?','¿Cuánto tiempo planea quedarse?','¿Quién financia su viaje?','¿A qué se dedica en su país?','¿Tiene familiares en el país de destino?','¿Qué lo hará regresar a su país de origen?','¿Dónde se hospedará?'],
+  'Visa de Trabajo':['¿Quién es su empleador y a qué se dedica la empresa?','¿Cuál será su puesto y salario?','¿Qué experiencia tiene en esta área?','¿Cómo consiguió esta oferta de trabajo?','¿Cuánto tiempo durará el contrato?','¿Tiene la titulación requerida?'],
+  'Visa de Estudiante':['¿Qué va a estudiar y en qué institución?','¿Por qué eligió ese programa y país?','¿Quién paga sus estudios y manutención?','¿Qué planea hacer al terminar?','¿Qué nivel del idioma tiene?'],
+  'Residencia':['¿Por qué desea residir en este país?','¿Cómo se sostendrá económicamente?','¿Tiene antecedentes penales?','¿Tiene familiares residentes o ciudadanos?','¿Dónde vivirá?'],
+  'Reunificación Familiar':['¿Cuál es su vínculo con el solicitante?','¿Desde cuándo se conocen / están casados?','¿Cómo se sostiene el hogar?','¿Han vivido juntos antes?','¿Cómo se comunican habitualmente?'],
+  'Ciudadanía / Naturalización':['¿Cuánto tiempo lleva residiendo en el país?','¿Por qué desea naturalizarse?','Preguntas de civismo/historia del país','¿Ha salido del país por períodos largos?'],
+  '_':['¿Cuál es el propósito de su trámite?','¿Cómo se sostiene económicamente?','¿Tiene antecedentes migratorios o penales?','¿Qué vínculos tiene con su país de origen?','¿Por qué eligió este país?']
+};
+
+// -------- helpers de fecha --------
+function addDaysISO(iso,n){ const d=new Date((iso||today())+'T00:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
+function addMonthsISO(iso,m){ const d=new Date((iso||today())+'T00:00:00'); d.setMonth(d.getMonth()+m); return d.toISOString().slice(0,10); }
+function fechaLarga(iso){ const M=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']; const d=iso?new Date(iso+'T00:00:00'):new Date(); return d.getDate()+' de '+M[d.getMonth()]+' de '+d.getFullYear(); }
+
+// -------- Elegibilidad --------
+function eligResult(c){
+  const ans=(c.elegibilidad&&c.elegibilidad.answers)||{};
+  let sum=0,sw=0,weak=[];
+  ELIG_QUESTIONS.forEach(q=>{ const idx=ans[q.id]; if(idx===undefined)return; const sc=q.opts[idx][1]; sum+=sc*q.w; sw+=q.w; if(sc<60)weak.push(q.tip); });
+  return { score: sw?Math.round(sum/sw):0, weak, answered: sw>0 };
+}
+function ringSVG(pct){
+  const r=54,c=2*Math.PI*r,off=c*(1-pct/100), col=pct>=75?'#37c98a':pct>=50?'#f5b13d':'#ff6a6a';
+  return `<div class="ring"><svg width="130" height="130" viewBox="0 0 130 130">
+    <circle cx="65" cy="65" r="${r}" fill="none" stroke="#26314d" stroke-width="12"/>
+    <circle cx="65" cy="65" r="${r}" fill="none" stroke="${col}" stroke-width="12" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"/>
+  </svg><div class="rt"><b style="color:${col}">${pct}%</b><span>éxito</span></div></div>`;
+}
+function setElig(casoId,qid,idx){
+  const c=DB.casos.find(x=>x.id===casoId); if(!c.elegibilidad)c.elegibilidad={answers:{}}; if(!c.elegibilidad.answers)c.elegibilidad.answers={};
+  c.elegibilidad.answers[qid]=idx;
+  const r=eligResult(c); c.elegibilidad.score=r.score; c.elegibilidad.weak=r.weak; c.elegibilidad.fecha=today();
+  if(!c.eligHist)c.eligHist=[]; const last=c.eligHist[c.eligHist.length-1];
+  if(!last||last.score!==r.score)c.eligHist.push({fecha:today(),score:r.score});
+  save(); openCasoDetail(casoId);
+}
+
+// -------- Línea de tiempo --------
+function computeTimeline(c){
+  const t=TIMELINE[c.tipo]||TIMELINE['Otro trámite']; const base=c.creado||today();
+  const dPrep=addDaysISO(base,t.prep);
+  const dCita=(c.fechaCita&&c.fechaCita!=='')?c.fechaCita:addDaysISO(base,t.prep+t.cita);
+  const dRev=addDaysISO(dCita,t.revision), dRes=addDaysISO(dRev,t.resolucion);
+  const steps=[{label:'Inicio del caso',date:base},{label:'Preparación de documentos',date:dPrep},{label:'Cita / entrevista',date:dCita},{label:'En revisión oficial',date:dRev},{label:'Resolución estimada',date:dRes}];
+  const tt=today(); steps.forEach(s=>{ s.done=s.date<tt; s.rel=semText(daysTo(s.date)); });
+  for(const s of steps){ if(!s.done){ s.now=true; break; } }
+  return steps;
+}
+
+// -------- Renovaciones --------
+function renewalDate(c){ const m=RENEWAL_MONTHS[c.tipo]; if(!m)return null; const base=c.cerrado||c.fechaLimite||today(); return addMonthsISO(base,m); }
+
+// -------- Impresión de documentos / cartas --------
+function printSheet(inner){
+  $('#printdoc').innerHTML=`<div class="doc-sheet">${inner}</div>`;
+  document.body.classList.add('printdoc-mode');
+  window.onafterprint=()=>{ document.body.classList.remove('printdoc-mode'); $('#printdoc').innerHTML=''; window.onafterprint=null; };
+  setTimeout(()=>{ try{ window.print(); }catch(e){} }, 80);
+}
+function docLogo(){ const d=DB.meta.asesor.logoData; return `<div class="dl">${d?`<img src="${d}">`:DEFAULT_LOGO_SVG}</div>`; }
+function docHeader(){ const a=DB.meta.asesor; return `<div class="dh">${docLogo()}<div><h1>${esc(a.oficina||'MG Legal & Migration')}</h1><div class="ds">Asesoría legal y migratoria${a.telefono?' · Tel: '+esc(a.telefono):''}${a.correo?' · '+esc(a.correo):''}</div></div></div>`; }
+function docSign(){ const a=DB.meta.asesor; return `<div class="sign"><div class="line">${esc(a.nombre||'____________________')}<br>${esc(a.oficina||'MG Legal & Migration')}</div></div>`; }
+
+function genLetter(kind,casoId){
+  const c=DB.casos.find(x=>x.id===casoId); const cli=DB.clientes.find(x=>x.id===c.clienteId)||{}; const a=DB.meta.asesor;
+  const nom=esc(cli.nombre||'[NOMBRE DEL CLIENTE]'); const doc=esc(cli.documento||'[DOCUMENTO]'); const pais=esc(cli.pais||'[PAÍS]');
+  const destino=esc(c.destino||'[PAÍS DESTINO]'); const tipo=esc(c.tipo);
+  const H=docHeader()+`<p style="text-align:right">${fechaLarga()}</p>`;
+  let t='',b='';
+  if(kind==='contrato'){
+    const pagos=DB.pagos.filter(p=>p.casoId===c.id); const total=pagos.reduce((s,p)=>s+Number(p.monto||0),0);
+    t='Contrato de Servicios de Asesoría Migratoria';
+    b=`<p>Entre <b>${esc(a.oficina||'MG Legal & Migration')}</b> (en adelante, “la Firma”) y <b>${nom}</b>, documento ${doc} (en adelante, “el Cliente”), se acuerda:</p>
+    <p><b>PRIMERO — Objeto.</b> La Firma prestará asesoría y acompañamiento para el trámite de <b>${tipo}</b> con destino a ${destino}.</p>
+    <p><b>SEGUNDO — Alcance.</b> La Firma orientará en la preparación de documentos, llenado de formularios y seguimiento del expediente. La decisión final corresponde a la autoridad migratoria; la Firma no garantiza la aprobación.</p>
+    <p><b>TERCERO — Honorarios.</b> El Cliente pagará los honorarios acordados${total?` por un total de <b>${money(total)}</b>`:''}, además de las tasas oficiales que correspondan.</p>
+    <p><b>CUARTO — Obligaciones del Cliente.</b> Entregar información veraz y la documentación requerida en tiempo.</p>
+    <p><b>QUINTO — Confidencialidad.</b> La Firma protegerá los datos del Cliente.</p>
+    <p>En señal de conformidad, ambas partes firman:</p>
+    <table style="margin-top:40px"><tr><td style="border:none;text-align:center">_______________________<br>La Firma</td><td style="border:none;text-align:center">_______________________<br>${nom}</td></tr></table>`;
+    printSheet(`${H}<h2>${t}</h2>${b}`); return;
+  }
+  if(kind==='cover'){ t='Carta de Presentación (Cover Letter)';
+    b=`<p>A quien corresponda / Sección Consular:</p>
+    <p>Por medio de la presente, presento el caso del(la) solicitante <b>${nom}</b>, ${doc}, nacional de ${pais}, quien solicita <b>${tipo}</b> con destino a ${destino}.</p>
+    <p>El(la) solicitante cuenta con la documentación de respaldo correspondiente y un motivo de viaje claro y legítimo. Adjunto el expediente con los soportes requeridos.</p>
+    <p>Agradezco la atención a la presente solicitud y quedo a disposición para cualquier aclaración.</p>`;
+  }
+  else if(kind==='invitacion'){ t='Carta de Invitación';
+    b=`<p>Yo, [NOMBRE DEL ANFITRIÓN], con documento [DOC ANFITRIÓN] y domicilio en [DIRECCIÓN EN ${destino}], por medio de la presente <b>invito</b> a <b>${nom}</b>, ${doc}, nacional de ${pais}, a visitarme.</p>
+    <p>Me hago responsable de su alojamiento durante su estadía. El motivo de la visita es [MOTIVO] y la duración prevista es de [DÍAS].</p>
+    <p>Sin otro particular, quedo a disposición de las autoridades para verificar esta invitación.</p>`;
+  }
+  else if(kind==='sustento'){ t='Carta de Sustento Económico';
+    b=`<p>A quien corresponda:</p>
+    <p>Por medio de la presente hago constar que <b>${nom}</b>, ${doc}, cuenta con los medios económicos para cubrir los gastos de su trámite de <b>${tipo}</b> y su estadía en ${destino}.</p>
+    <p>Se adjuntan estados de cuenta, comprobantes de ingresos y demás soportes que acreditan la solvencia del(la) solicitante.</p>`;
+  }
+  else if(kind==='jurada'){ t='Declaración Jurada';
+    b=`<p>Yo, <b>${nom}</b>, ${doc}, nacional de ${pais}, <b>declaro bajo juramento</b> que:</p>
+    <p>1. Toda la información y documentación aportada para mi trámite de <b>${tipo}</b> es verídica y auténtica.</p>
+    <p>2. El motivo de mi solicitud es legítimo.</p>
+    <p>3. Me comprometo a cumplir las leyes migratorias de ${destino}.</p>
+    <p>Firmo la presente para los fines legales que correspondan.</p>`;
+  }
+  else if(kind==='poder'){ t='Carta Poder / Autorización de Representación';
+    b=`<p>Yo, <b>${nom}</b>, ${doc}, nacional de ${pais}, <b>autorizo</b> a <b>${esc(a.oficina||'MG Legal & Migration')}</b> y a su representante ${esc(a.nombre||'[ASESOR]')} a gestionar, presentar y dar seguimiento a mi trámite de <b>${tipo}</b> ante las autoridades correspondientes.</p>
+    <p>Esta autorización incluye la entrega y recepción de documentos relacionados con el expediente.</p>`;
+  }
+  else { t='Documento'; b='<p>—</p>'; }
+  printSheet(`${H}<h2>${t}</h2>${b}${docSign()}`);
+}
+
+async function expedienteMaestro(casoId){
+  const c=DB.casos.find(x=>x.id===casoId); const cli=DB.clientes.find(x=>x.id===c.clienteId)||{};
+  toast('Preparando expediente…');
+  const r=eligResult(c); const p=casoProgress(c);
+  let cover=`${docHeader()}
+    <h2 style="text-align:center;margin-top:30px">EXPEDIENTE MAESTRO</h2>
+    <p style="text-align:center">${esc(c.tipo)} — ${esc(c.destino||'')}</p>
+    <table style="margin-top:24px">
+      <tr><th>Cliente</th><td>${esc(cli.nombre||'')}</td></tr>
+      <tr><th>Documento</th><td>${esc(cli.documento||'')}</td></tr>
+      <tr><th>País de origen</th><td>${esc(cli.pais||'')}</td></tr>
+      <tr><th>Trámite</th><td>${esc(c.tipo)}</td></tr>
+      <tr><th>Expediente</th><td>${esc(c.expediente||'—')}</td></tr>
+      <tr><th>Estado</th><td>${esc(c.estado)}</td></tr>
+      <tr><th>Documentos completos</th><td>${p}%</td></tr>
+      ${r.answered?`<tr><th>Probabilidad estimada</th><td>${r.score}%</td></tr>`:''}
+      <tr><th>Fecha</th><td>${fechaLarga()}</td></tr>
+    </table>`;
+  let chk=`<div class="pagebreak"><h2>Checklist de documentos</h2><table><tr><th>Documento</th><th>Estado</th></tr>
+    ${(c.docs||[]).map(d=>`<tr><td>${esc(d.req)}</td><td>${esc(d.estado)}${d.archivo?' · adjunto':''}</td></tr>`).join('')}</table></div>`;
+  // adjuntos imagen
+  const atts=[]; (c.docs||[]).forEach(d=>{ if(d.archivo)atts.push({name:d.req,stored:d.archivo.stored}); });
+  DB.pagos.filter(x=>x.casoId===c.id&&x.comprobante).forEach(x=>atts.push({name:'Comprobante: '+x.concepto,stored:x.comprobante.stored}));
+  let imgs='';
+  for(const at of atts){ try{ const f=await window.api.fileDataUrl(at.stored); if(f&&f.isImage) imgs+=`<div class="pagebreak"><h2>${esc(at.name)}</h2><img class="imgdoc" src="${f.dataUrl}"></div>`; }catch(e){} }
+  if(!imgs&&atts.length) imgs=`<div class="pagebreak"><h2>Adjuntos</h2><p>${atts.map(a=>esc(a.name)).join('<br>')}</p></div>`;
+  printSheet(cover+chk+imgs);
+}
+function printEntrevista(casoId){
+  const c=DB.casos.find(x=>x.id===casoId); const cli=DB.clientes.find(x=>x.id===c.clienteId)||{};
+  const qs=INTERVIEW[c.tipo]||INTERVIEW['_'];
+  printSheet(`${docHeader()}<h2>Simulacro de Entrevista Consular — ${esc(c.tipo)}</h2>
+    <p><b>Cliente:</b> ${esc(cli.nombre||'')}</p>
+    <ol>${qs.map(q=>`<li style="margin-bottom:14px">${esc(q)}<br><span style="color:#999">Respuesta: ____________________________________________</span></li>`).join('')}</ol>`);
+}
+
+// -------- Bitácora (inmutable) --------
+function addBitacora(casoId){
+  const el=$('#logTxt'); const txt=el&&el.value.trim(); if(!txt)return toast('Escribe la anotación');
+  const c=DB.casos.find(x=>x.id===casoId); if(!c.bitacora)c.bitacora=[];
+  c.bitacora.push({ts:new Date().toLocaleString('es-DO'),texto:txt}); save(); openCasoDetail(casoId);
+}
+
+// -------- WhatsApp de las nuevas funciones --------
+function waElegibilidad(casoId){
+  const c=DB.casos.find(x=>x.id===casoId); const tel=clientePhone(c.clienteId); if(!tel)return toast('Sin teléfono');
+  const r=eligResult(c);
+  const msg=`Hola ${clienteName(c.clienteId)} 👋\n\nEvaluación de su caso *${c.tipo}*:\n📊 Probabilidad estimada: *${r.score}%*\n${r.weak.length?'\nPara mejorar sus posibilidades:\n'+r.weak.map(w=>'• '+w).join('\n'):'\n¡Su caso luce sólido! ✅'}${firma()}`;
+  api.sendWhatsApp(tel,msg);
+}
+function waEntrevista(casoId){
+  const c=DB.casos.find(x=>x.id===casoId); const tel=clientePhone(c.clienteId); if(!tel)return toast('Sin teléfono');
+  const qs=INTERVIEW[c.tipo]||INTERVIEW['_'];
+  api.sendWhatsApp(tel,`Hola ${clienteName(c.clienteId)} 👋\nPreguntas para practicar antes de su entrevista (${c.tipo}):\n\n${qs.map((q,i)=>(i+1)+'. '+q).join('\n')}${firma()}`);
+}
+function waRenovacion(casoId){
+  const c=DB.casos.find(x=>x.id===casoId); const tel=clientePhone(c.clienteId); if(!tel)return toast('Sin teléfono');
+  api.sendWhatsApp(tel,`Hola ${clienteName(c.clienteId)} 👋\nLe recordamos que su *${c.tipo}* está próximo a vencer/renovarse (${renewalDate(c)}). Con gusto le ayudamos con la renovación a tiempo.${firma()}`);
 }
 
 // -------- Estado / Base de datos --------
@@ -355,9 +609,11 @@ const TABS = [
   {k:'casos',  i:'🗂️', t:'Casos'},
   {k:'clientes',i:'👤', t:'Clientes'},
   {k:'venc',   i:'⏰', t:'Vencimientos'},
+  {k:'record', i:'📨', t:'Recordatorios'},
   {k:'fin',    i:'💰', t:'Finanzas'},
   {k:'leads',  i:'🎯', t:'Leads / CRM'},
   {k:'citas',  i:'📅', t:'Citas'},
+  {k:'renov',  i:'🔁', t:'Renovaciones'},
   {k:'rep',    i:'📈', t:'Reportes'},
   {k:'cfg',    i:'⚙️', t:'Configuración'}
 ];
@@ -380,7 +636,7 @@ function updateBadges(){
 function render(){
   const tab = TABS.find(t=>t.k===currentTab);
   $('#ttl').textContent = tab.t;
-  const map = {dash:renderDash,casos:renderCasos,clientes:renderClientes,venc:renderVenc,fin:renderFin,leads:renderLeads,citas:renderCitas,rep:renderRep,cfg:renderCfg};
+  const map = {dash:renderDash,casos:renderCasos,clientes:renderClientes,venc:renderVenc,record:renderRecord,fin:renderFin,leads:renderLeads,citas:renderCitas,renov:renderRenov,rep:renderRep,cfg:renderCfg};
   $('#tsub').textContent = subFor(currentTab);
   $('#view').innerHTML = map[currentTab]();
   wire();
@@ -653,6 +909,44 @@ function renderCitas(){
   </tbody></table>`:emptyState('📅','Sin citas','Agenda consultas y recuérdalas por WhatsApp con un clic.')}</div>`;
 }
 
+// ---------------- RECORDATORIOS (secuencias WhatsApp) ----------------
+function seqTag(dd){ if(dd<=1)return ['t-red','Último aviso']; if(dd<=7)return ['t-red','7 días']; if(dd<=15)return ['t-amber','15 días']; return ['t-blue','30 días']; }
+function renderRecord(){
+  const items=[];
+  DB.casos.forEach(c=>{ if(c.estado==='Aprobado'||c.estado==='Rechazado')return;
+    if(c.fechaCita){ const dd=daysTo(c.fechaCita); if(dd!==null&&dd>=0&&dd<=30) items.push({casoId:c.id,cliente:clienteName(c.clienteId),tipo:c.tipo,tel:clientePhone(c.clienteId),kind:'cita',dd,detalle:'Cita el '+c.fechaCita}); }
+  });
+  DB.pagos.filter(p=>p.estado==='Pendiente').forEach(p=>{ const c=DB.casos.find(x=>x.id===p.casoId); if(!c||c.estado==='Rechazado')return; items.push({casoId:c.id,cliente:clienteName(c.clienteId),tipo:c.tipo,tel:clientePhone(c.clienteId),kind:'cobro',pagoId:p.id,dd:999,detalle:'Cobro pendiente: '+money(p.monto)}); });
+  items.sort((a,b)=>a.dd-b.dd);
+  return `<div class="card"><h3>📨 Secuencias automáticas de recordatorios</h3>
+    <p class="hint">El sistema arma la cola de recordatorios de <b>citas</b> (30/15/7/1 días antes) y de <b>cobros pendientes</b>. Envía cada uno por WhatsApp con un clic — el mensaje ya viene escrito.</p></div>
+    ${items.length?`<div class="card" style="padding:6px 0"><table><thead><tr><th style="padding-left:18px">Cliente</th><th>Trámite</th><th>Recordatorio</th><th>Momento</th><th style="text-align:right;padding-right:18px">Enviar</th></tr></thead><tbody>
+    ${items.map(i=>{ const st=i.kind==='cita'?seqTag(i.dd):['t-green','Cobro']; return `<tr>
+      <td style="padding-left:18px"><b>${esc(i.cliente)}</b></td><td class="mini">${esc(i.tipo)}</td>
+      <td>${esc(i.detalle)}</td>
+      <td><span class="tag ${st[0]}">${i.kind==='cita'?'A '+i.dd+' días · '+st[1]:st[1]}</span></td>
+      <td style="text-align:right;padding-right:18px">${i.tel?`<button class="btn wa sm" onclick="${i.kind==='cita'?`waVenc('${i.casoId}','cita')`:`waCobro('${i.pagoId}')`}">💬 Enviar</button>`:'<span class="mini">sin teléfono</span>'}</td>
+    </tr>`;}).join('')}
+    </tbody></table></div>`:emptyState('📨','Sin recordatorios pendientes','Cuando haya citas próximas (≤30 días) o cobros pendientes, aparecerán aquí listos para enviar.')}`;
+}
+
+// ---------------- RENOVACIONES ----------------
+function renderRenov(){
+  const list=DB.casos.filter(c=>c.estado==='Aprobado').map(c=>({c,fecha:renewalDate(c)})).filter(x=>x.fecha).sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  return `<div class="card"><h3>🔁 Radar de renovaciones</h3>
+    <p class="hint">Cuando un caso se aprueba, el sistema calcula cuándo toca renovar (residencia, visa, etc.) para que recuperes al cliente a tiempo. Nuevo trámite = nuevo ingreso.</p></div>
+    ${list.length?`<div class="card" style="padding:6px 0"><table><thead><tr><th style="padding-left:18px">Cliente</th><th>Trámite</th><th>Aprobado</th><th>Renovar antes de</th><th>Faltan</th><th style="text-align:right;padding-right:18px">Acción</th></tr></thead><tbody>
+    ${list.map(({c,fecha})=>{ const dd=daysTo(fecha); return `<tr>
+      <td style="padding-left:18px"><b>${esc(clienteName(c.clienteId))}</b></td><td class="mini">${esc(c.tipo)}</td>
+      <td class="mini">${esc(c.cerrado||'—')}</td><td><b>${esc(fecha)}</b></td>
+      <td><span class="pill-days" style="background:rgba(255,255,255,.06);color:var(${semColor(dd)})">${semText(dd)}</span></td>
+      <td class="tbl-actions" style="justify-content:flex-end;padding-right:18px">
+        <button class="iconbtn" onclick="openCasoDetail('${c.id}')">Ver</button>
+        ${clientePhone(c.clienteId)?`<button class="btn wa sm" onclick="waRenovacion('${c.id}')">💬 Recordar</button>`:''}</td>
+    </tr>`;}).join('')}
+    </tbody></table></div>`:emptyState('🔁','Sin renovaciones aún','Cuando marques casos como “Aprobado”, aquí verás cuándo toca renovar cada uno.')}`;
+}
+
 // ---------------- REPORTES ----------------
 function renderRep(){
   return `<div class="grid2">
@@ -759,7 +1053,7 @@ function wire(){
 // ============================================================================
 //  MODALES
 // ============================================================================
-function modal(html){ $('#mod').innerHTML=html; $('#ov').classList.add('on'); }
+function modal(html,wide){ const m=$('#mod'); m.className='modal'+(wide?' wide':''); m.innerHTML=html; $('#ov').classList.add('on'); }
 function closeModal(){ $('#ov').classList.remove('on'); }
 $('#ov').addEventListener('click',e=>{if(e.target.id==='ov')closeModal();});
 
@@ -768,6 +1062,10 @@ function openCliente(id){
   const c=id?DB.clientes.find(x=>x.id===id):{};
   modal(`<div class="mh"><h3>${id?'Editar':'Nuevo'} cliente</h3><button class="x" onclick="closeModal()">✕</button></div>
   <div class="mb">
+    <div style="margin-bottom:14px;padding:12px;background:var(--bg);border:1px solid var(--line);border-radius:9px">
+      <button class="btn" type="button" onclick="scanMRZ()">🛂 Escanear pasaporte (MRZ)</button>
+      <div class="hint" style="margin-top:6px">Autollena nombre, documento y país leyendo las 2 líneas de códigos (&lt;&lt;&lt;) del pasaporte.</div>
+    </div>
     <div class="fg"><label>Nombre completo *</label><input id="clNombre" value="${esc(c.nombre||'')}"></div>
     <div class="frow"><div class="fg"><label>Teléfono (con código país)</label><input id="clTel" placeholder="1809..." value="${esc(c.telefono||'')}"></div>
     <div class="fg"><label>Correo</label><input id="clCorreo" value="${esc(c.correo||'')}"></div></div>
@@ -784,6 +1082,32 @@ function saveCliente(id){
   save();closeModal();render();toast('Cliente guardado');
 }
 function delCliente(id){ if(DB.casos.some(c=>c.clienteId===id))return toast('Tiene casos asociados; elimínalos primero'); if(confirm('¿Eliminar cliente?')){DB.clientes=DB.clientes.filter(c=>c.id!==id);save();render();} }
+// Lector de pasaporte (zona MRZ, formato TD3 de 2 líneas)
+function parseMRZ(raw){
+  const lines=String(raw||'').toUpperCase().replace(/[^A-Z0-9<\n]/g,'').split(/\n+/).map(s=>s.trim()).filter(Boolean);
+  let l1,l2;
+  for(let i=0;i<lines.length;i++){ if(lines[i][0]==='P'&&lines[i].includes('<')&&lines[i+1]){ l1=lines[i]; l2=lines[i+1]; break; } }
+  if((!l1||!l2)&&lines.length>=2){ l1=lines[lines.length-2]; l2=lines[lines.length-1]; }
+  if(!l1||!l2)return null;
+  const clean=s=>(s||'').replace(/</g,' ').replace(/\s+/g,' ').trim();
+  const namePart=l1.slice(5); const parts=namePart.split('<<');
+  const nombre=(clean(parts[1])+' '+clean(parts[0])).trim();
+  const documento=l2.slice(0,9).replace(/</g,'');
+  const nac=l2.slice(10,13).replace(/</g,'');
+  const fmt=(y,exp)=>{ if(!/^\d{6}$/.test(y))return ''; const yy=+y.slice(0,2); const year=exp?2000+yy:(yy>30?1900+yy:2000+yy); return year+'-'+y.slice(2,4)+'-'+y.slice(4,6); };
+  return {nombre,documento,nacionalidad:nac,nacimiento:fmt(l2.slice(13,19),false),expira:fmt(l2.slice(21,27),true)};
+}
+function scanMRZ(){
+  const raw=prompt('Pega las 2 líneas de códigos (MRZ) del pasaporte:\n(la zona con < < < al final de la página de datos)');
+  if(!raw)return; const m=parseMRZ(raw);
+  if(!m||!m.documento){ toast('No pude leer el MRZ. Copia las 2 líneas completas.'); return; }
+  if($('#clNombre')&&m.nombre)$('#clNombre').value=m.nombre;
+  if($('#clDoc'))$('#clDoc').value=m.documento;
+  if($('#clPais')&&m.nacionalidad)$('#clPais').value=m.nacionalidad;
+  const extra=`Pasaporte ${m.documento}${m.nacimiento?' · Nac: '+m.nacimiento:''}${m.expira?' · Vence: '+m.expira:''}`;
+  if($('#clNota'))$('#clNota').value=($('#clNota').value?$('#clNota').value+'\n':'')+extra;
+  toast('Datos del pasaporte cargados ✓');
+}
 
 // ---- Caso ----
 function openCaso(id){
@@ -822,20 +1146,37 @@ function saveCaso(id){
 function delCaso(id){ if(confirm('¿Eliminar este caso y sus documentos?')){DB.casos=DB.casos.filter(c=>c.id!==id);DB.pagos=DB.pagos.filter(p=>p.casoId!==id);save();closeModal();render();} }
 
 // ---- Detalle de caso (documentos + WhatsApp) ----
+let casoDetailTab='docs';
+function casoTabSet(id,t){ casoDetailTab=t; openCasoDetail(id); }
 function openCasoDetail(id){
   const c=DB.casos.find(x=>x.id===id); if(!c)return;
-  if(!c.docs)c.docs=[];
-  const p=casoProgress(c);
+  if(!c.docs)c.docs=[]; if(!c.bitacora)c.bitacora=[];
   const cli=DB.clientes.find(x=>x.id===c.clienteId)||{};
+  const r=eligResult(c);
+  const tabs=[['docs','📄 Documentos'],['elig','🎯 Elegibilidad'],['tiempo','📅 Línea de tiempo'],['cartas','🖨️ Cartas / PDF'],['entrevista','🎤 Entrevista'],['bitacora','📝 Bitácora']];
+  const bodyFn={docs:tabDocs,elig:tabElig,tiempo:tabTiempo,cartas:tabCartas,entrevista:tabEntrevista,bitacora:tabBitacora};
   modal(`<div class="mh"><h3>${esc(cli.nombre||'Caso')} · ${esc(c.tipo)}</h3><button class="x" onclick="closeModal()">✕</button></div>
   <div class="mb">
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
       <span class="tag t-blue">${esc(c.estado)}</span>
       ${c.expediente?`<span class="tag t-gray">Exp #${esc(c.expediente)}</span>`:''}
       ${c.fechaCita?`<span class="tag t-amber">📅 Cita ${esc(c.fechaCita)}</span>`:''}
       ${c.fechaLimite?`<span class="tag ${semColor(daysTo(c.fechaLimite))==='--red'?'t-red':'t-amber'}">⏰ ${semText(daysTo(c.fechaLimite))}</span>`:''}
+      ${r.answered?`<span class="tag ${r.score>=75?'t-green':r.score>=50?'t-amber':'t-red'}">🎯 ${r.score}% éxito</span>`:''}
     </div>
-    <div style="margin-bottom:6px;display:flex;justify-content:space-between"><b>Documentos</b><span>${p}% completo</span></div>
+    <div class="ctabs">${tabs.map(t=>`<button class="${casoDetailTab===t[0]?'on':''}" onclick="casoTabSet('${c.id}','${t[0]}')">${t[1]}</button>`).join('')}</div>
+    ${(bodyFn[casoDetailTab]||tabDocs)(c,cli)}
+  </div>
+  <div class="mf">
+    <button class="btn red" onclick="delCaso('${c.id}')">🗑️ Eliminar</button>
+    <div class="grow" style="flex:1"></div>
+    <button class="btn" onclick="openPago(null,'${c.id}')">💰 Agregar pago</button>
+    <button class="btn gold" onclick="openCaso('${c.id}')">✏️ Editar caso</button>
+  </div>`, true);
+}
+function tabDocs(c,cli){
+  const p=casoProgress(c);
+  return `<div style="margin-bottom:6px;display:flex;justify-content:space-between"><b>Documentos</b><span>${p}% completo</span></div>
     <div class="progress" style="margin-bottom:14px"><i style="width:${p}%"></i></div>
     <div id="docList">${c.docs.map((d,i)=>docRow(c.id,i,d)).join('')||'<p class="hint">Sin documentos.</p>'}</div>
     <button class="btn sm" style="margin-top:10px" onclick="addDoc('${c.id}')">+ Agregar documento</button>
@@ -848,14 +1189,58 @@ function openCasoDetail(id){
         <button class="btn wa sm" onclick="waVenc('${c.id}','cita')">Recordar cita</button>
       </div>
       ${!cli.telefono?'<p class="hint">⚠️ Este cliente no tiene teléfono registrado.</p>':''}
-    </div>
-  </div>
-  <div class="mf">
-    <button class="btn red" onclick="delCaso('${c.id}')">🗑️ Eliminar</button>
-    <div class="grow" style="flex:1"></div>
-    <button class="btn" onclick="openPago(null,'${c.id}')">💰 Agregar pago</button>
-    <button class="btn gold" onclick="openCaso('${c.id}')">✏️ Editar caso</button>
-  </div>`);
+    </div>`;
+}
+function tabElig(c,cli){
+  const r=eligResult(c);
+  return `<div class="card" style="background:var(--bg)"><div class="gauge">${ringSVG(r.score)}
+    <div style="flex:1;min-width:220px"><b>Semáforo de aprobación</b>
+      <p class="hint">Responde el cuestionario; el % se calcula y se guarda en el caso.</p>
+      ${r.weak.length?`<div class="weak"><b style="color:var(--red)">Puntos a reforzar:</b><ul>${r.weak.map(w=>`<li>${esc(w)}</li>`).join('')}</ul></div>`:(r.answered?`<span class="tag t-green">Caso sólido ✓</span>`:'<p class="hint">Sin evaluar todavía.</p>')}
+      ${cli.telefono&&r.answered?`<div style="margin-top:10px"><button class="btn wa sm" onclick="waElegibilidad('${c.id}')">💬 Enviar resultado al cliente</button></div>`:''}
+      ${(c.eligHist&&c.eligHist.length>1)?`<p class="hint" style="margin-top:8px">Evolución: ${c.eligHist.map(h=>h.score+'%').join(' → ')}</p>`:''}
+    </div></div></div>
+    ${ELIG_QUESTIONS.map(q=>{ const cur=(c.elegibilidad&&c.elegibilidad.answers)?c.elegibilidad.answers[q.id]:undefined;
+      return `<div class="eq"><label>${esc(q.q)}</label><div class="opts">${q.opts.map((o,i)=>`<button class="${cur===i?'on':''}" onclick="setElig('${c.id}','${q.id}',${i})">${esc(o[0])}</button>`).join('')}</div></div>`;}).join('')}`;
+}
+function tabTiempo(c){
+  const steps=computeTimeline(c);
+  return `<div class="card" style="background:var(--bg)"><b>Línea de tiempo estimada</b>
+    <p class="hint">Proyección según el tipo de trámite. Ajusta la fecha de cita en el caso para afinarla.</p>
+    <div class="tl">${steps.map(s=>`<div class="step ${s.done?'done':''} ${s.now?'now':''}"><b>${esc(s.label)}</b><div class="d">${esc(fechaLarga(s.date))} · ${esc(s.rel)}</div></div>`).join('')}</div>
+    <p class="hint" style="margin-top:6px">📌 Resolución estimada: <b>${esc(fechaLarga(steps[steps.length-1].date))}</b></p></div>`;
+}
+function tabCartas(c){
+  return `<div class="card" style="background:var(--bg)"><b>📄 Generar documentos con tu marca (PDF)</b>
+    <p class="hint">Se abre el diálogo de impresión → elige “Guardar como PDF” o imprime.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+      <button class="btn letter-btn" onclick="genLetter('contrato','${c.id}')">Contrato de servicios<small>Acuerdo asesor–cliente</small></button>
+      <button class="btn letter-btn" onclick="genLetter('cover','${c.id}')">Cover letter consular<small>Carta de presentación del caso</small></button>
+      <button class="btn letter-btn" onclick="genLetter('invitacion','${c.id}')">Carta de invitación<small>Anfitrión en el destino</small></button>
+      <button class="btn letter-btn" onclick="genLetter('sustento','${c.id}')">Carta de sustento económico<small>Solvencia del solicitante</small></button>
+      <button class="btn letter-btn" onclick="genLetter('jurada','${c.id}')">Declaración jurada<small>Declaración de veracidad</small></button>
+      <button class="btn letter-btn" onclick="genLetter('poder','${c.id}')">Carta poder<small>Autoriza a representarte</small></button>
+    </div></div>
+    <div class="card" style="background:var(--bg)"><b>📚 Expediente maestro</b>
+      <p class="hint">Un solo PDF con portada, resumen, checklist y las imágenes adjuntas del caso.</p>
+      <button class="btn gold" onclick="expedienteMaestro('${c.id}')">📚 Generar expediente maestro (PDF)</button></div>`;
+}
+function tabEntrevista(c){
+  const qs=INTERVIEW[c.tipo]||INTERVIEW['_'];
+  return `<div class="card" style="background:var(--bg)"><b>🎤 Preparación de entrevista consular</b>
+    <p class="hint">Preguntas típicas para este tipo de trámite. Practica con el cliente o imprime el simulacro.</p>
+    <ol style="margin:10px 0 0 18px">${qs.map(q=>`<li style="margin-bottom:8px">${esc(q)}</li>`).join('')}</ol>
+    <div class="wa-menu" style="margin-top:12px">
+      <button class="btn" onclick="printEntrevista('${c.id}')">🖨️ Imprimir simulacro</button>
+      ${clientePhone(c.clienteId)?`<button class="btn wa sm" onclick="waEntrevista('${c.id}')">💬 Enviar al cliente</button>`:''}
+    </div></div>`;
+}
+function tabBitacora(c){
+  return `<div class="card" style="background:var(--bg)"><b>📝 Bitácora legal (registro inmutable)</b>
+    <p class="hint">Cada anotación queda con fecha y hora. No se edita ni se borra — sirve como respaldo legal.</p>
+    <div style="display:flex;gap:8px;margin:12px 0"><input id="logTxt" placeholder="Consejo dado, acción realizada, acuerdo con el cliente…" style="flex:1;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:9px 11px;color:var(--txt)">
+      <button class="btn gold" onclick="addBitacora('${c.id}')">Registrar</button></div>
+    ${c.bitacora.length?[...c.bitacora].reverse().map(b=>`<div class="log-item"><div class="t">🕒 ${esc(b.ts)}</div>${esc(b.texto)}</div>`).join(''):'<p class="hint">Sin anotaciones aún.</p>'}</div>`;
 }
 function docRow(casoId,i,d){
   const done=d.estado==='Recibido'||d.estado==='Verificado';
@@ -1053,6 +1438,8 @@ function loadDemo(){
         fechaCita:Math.random()<0.6?dISO(ri(-3,45)):'', fechaLimite:Math.random()<0.6?dISO(ri(-5,60)):'',
         notas:'',creado:dISO(-ri(5,200)),docs};
       if(estado==='Aprobado'||estado==='Rechazado')caso.cerrado=dISO(-ri(1,30));
+      if(Math.random()<0.7){ caso.elegibilidad={answers:{}}; ELIG_QUESTIONS.forEach(q=>caso.elegibilidad.answers[q.id]=ri(0,q.opts.length-1)); const er=eligResult(caso); caso.elegibilidad.score=er.score; caso.elegibilidad.weak=er.weak; caso.elegibilidad.fecha=today(); caso.eligHist=[{fecha:today(),score:er.score}]; }
+      if(Math.random()<0.4){ caso.bitacora=[{ts:new Date(Date.now()-ri(1,40)*86400000).toLocaleString('es-DO'),texto:rnd(['Se orientó al cliente sobre los documentos requeridos.','Cliente entregó pasaporte y estados de cuenta.','Se explicaron los tiempos del proceso y las tasas oficiales.','Se advirtió que la aprobación depende de la autoridad migratoria.'])}]; }
       DB.casos.push(caso);
       if(Math.random()<0.85) DB.pagos.push({id:uid(),casoId:caso.id,concepto:rnd(['Anticipo','Honorarios','Tasa consular','Segundo pago']),monto:ri(1,14)*2500,tipo:rnd(['Honorario','Honorario','Tasa oficial']),estado:Math.random()<0.55?'Pagado':'Pendiente',fecha:dISO(-ri(1,60))});
     }

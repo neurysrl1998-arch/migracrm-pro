@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('api', {
   saveDB:      (content)     => ipcRenderer.invoke('db:save', content),
   attachFile:  ()            => ipcRenderer.invoke('file:attach'),
   openFile:    (stored)      => ipcRenderer.invoke('file:open', stored),
+  fileDataUrl: (stored)      => ipcRenderer.invoke('file:dataurl', stored),
   sendWhatsApp:(phone, text) => ipcRenderer.invoke('wa:send', { phone, text }),
   exportSave:  (suggested, content) => ipcRenderer.invoke('export:save', { suggested, content }),
   openBackups: ()            => ipcRenderer.invoke('backup:folder'),

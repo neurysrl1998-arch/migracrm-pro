@@ -125,6 +125,18 @@ ipcMain.handle('file:open', (e, storedName) => {
   return 'No encontrado';
 });
 
+// Leer un adjunto como dataURL (para incrustar imágenes en el expediente maestro PDF)
+ipcMain.handle('file:dataurl', (e, storedName) => {
+  try {
+    const p = path.join(ADJ_DIR, storedName);
+    if (!fs.existsSync(p)) return null;
+    const ext = path.extname(p).toLowerCase().replace('.', '');
+    const mime = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp', pdf: 'application/pdf' }[ext] || 'application/octet-stream';
+    const b64 = fs.readFileSync(p).toString('base64');
+    return { mime, dataUrl: 'data:' + mime + ';base64,' + b64, isImage: mime.startsWith('image/') };
+  } catch (err) { return null; }
+});
+
 // Enviar a WhatsApp (abre WhatsApp Desktop/Web con el mensaje precargado)
 ipcMain.handle('wa:send', (e, { phone, text }) => {
   const clean = String(phone || '').replace(/[^\d]/g, '');
