@@ -288,11 +288,12 @@ if (!window.api) {
     attachFile:  () => { alert('Adjuntar archivos solo está disponible en la app de escritorio.'); return null; },
     openFile:    () => {},
     fileDataUrl: () => null,
+    docExport:   () => ({ error: 'Solo disponible en la app de escritorio.' }),
     sendWhatsApp:(phone, text) => window.open('https://wa.me/' + String(phone||'').replace(/[^\d]/g,'') + '?text=' + encodeURIComponent(text||''), '_blank'),
     exportSave:  (name, content) => { const b=new Blob([content],{type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name; a.click(); return name; },
     openBackups: () => alert('La carpeta de respaldos está disponible en la app de escritorio.'),
     paths:       () => ({ data:'(navegador)', backups:'(navegador)', adjuntos:'(navegador)' }),
-    version:     () => '1.3.0',
+    version:     () => '1.4.0',
     onUpdateStatus: () => {},
     updateInstall:  () => {},
     updateCheck:    () => {}
@@ -436,19 +437,53 @@ function printSheet(inner){
   window.onafterprint=()=>{ document.body.classList.remove('printdoc-mode'); $('#printdoc').innerHTML=''; window.onafterprint=null; };
   setTimeout(()=>{ try{ window.print(); }catch(e){} }, 80);
 }
+// CSS del documento para exportar a PDF/PNG (standalone, hoja blanca)
+const DOC_CSS=`body{margin:0;background:#fff}
+.doc-sheet{font-family:Georgia,serif;color:#111;max-width:800px;margin:0 auto;padding:30px 40px;line-height:1.6}
+.doc-sheet .dh{display:flex;align-items:center;gap:16px;border-bottom:3px solid #16365c;padding-bottom:12px;margin-bottom:22px}
+.doc-sheet .dh .dl{width:72px;height:72px;flex:0 0 auto}
+.doc-sheet .dh .dl img{max-width:100%;max-height:100%;object-fit:contain}
+.doc-sheet .dh .dl svg{width:70px;height:70px}
+.doc-sheet .dh h1{font-size:22px;margin:0;color:#16365c;font-family:'Segoe UI',Arial,sans-serif}
+.doc-sheet .dh .ds{font-size:12px;color:#555}
+.doc-sheet h2{font-size:16px;color:#16365c;margin:18px 0 8px}
+.doc-sheet .sign{margin-top:60px}
+.doc-sheet .sign .line{border-top:1px solid #333;width:260px;padding-top:5px;font-size:13px}
+.doc-sheet table{width:100%;border-collapse:collapse;font-family:'Segoe UI',Arial,sans-serif;font-size:13px}
+.doc-sheet td,.doc-sheet th{border:1px solid #ccc;padding:7px 9px;text-align:left;color:#111}
+.doc-sheet .imgdoc{max-width:100%;border:1px solid #ccc;margin:8px 0;page-break-inside:avoid}
+.doc-sheet .pagebreak{page-break-before:always}`;
+function buildDocHTML(inner){ return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${DOC_CSS}</style></head><body><div class="doc-sheet">${inner}</div></body></html>`; }
+
 // Vista previa profesional antes de descargar/imprimir (editable en vivo)
-function previewDoc(inner,title){
-  modal(`<div class="mh"><h3>👁️ ${esc(title||'Vista previa del documento')}</h3><button class="x" onclick="closeModal()">✕</button></div>
+let _docTitle='documento';
+function previewDoc(inner,title,backCasoId){
+  _docTitle=title||'documento';
+  const cerrar = backCasoId ? `openCasoDetail('${backCasoId}')` : 'closeModal()';
+  modal(`<div class="mh"><button class="x" onclick="${cerrar}" title="Volver">←</button><h3>👁️ ${esc(title||'Vista previa del documento')}</h3><button class="x" onclick="${cerrar}">✕</button></div>
   <div class="mb" style="background:#525659;padding:20px">
-    <div class="doc-editnote">✏️ Vista previa exacta del PDF. Puedes editar el texto aquí antes de generarlo.</div>
+    <div class="doc-editnote">✏️ Vista previa exacta. Puedes editar el texto aquí antes de exportarlo.</div>
     <div class="doc-preview"><div class="doc-sheet" id="docEditable" contenteditable="true">${inner}</div></div>
   </div>
   <div class="mf">
-    <button class="btn ghost" onclick="closeModal()">Cerrar</button>
-    <button class="btn gold" onclick="printCurrentDoc()">🖨️ Descargar / Imprimir PDF</button>
+    <button class="btn ghost" onclick="${cerrar}">← Volver</button>
+    <div class="grow" style="flex:1"></div>
+    <button class="btn" onclick="exportDoc('png')">🖼️ Descargar PNG</button>
+    <button class="btn" onclick="exportDoc('pdf')">📄 Descargar PDF</button>
+    <button class="btn gold" onclick="printCurrentDoc()">🖨️ Imprimir</button>
   </div>`, true);
 }
 function printCurrentDoc(){ const el=$('#docEditable'); if(el) printSheet(el.innerHTML); }
+async function exportDoc(fmt){
+  const el=$('#docEditable'); if(!el)return;
+  const name=(_docTitle||'documento').toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'.'+fmt;
+  toast('Generando '+fmt.toUpperCase()+'…');
+  try{
+    const r=await window.api.docExport(fmt,buildDocHTML(el.innerHTML),name);
+    if(r&&r.error) toast('No se pudo generar el '+fmt.toUpperCase());
+    else if(r) toast(fmt.toUpperCase()+' guardado ✓');
+  }catch(e){ toast('No se pudo generar el '+fmt.toUpperCase()); }
+}
 function docLogo(){ const d=DB.meta.asesor.logoData; return `<div class="dl">${d?`<img src="${d}">`:DEFAULT_LOGO_SVG}</div>`; }
 function docHeader(){ const a=DB.meta.asesor; return `<div class="dh">${docLogo()}<div><h1>${esc(a.oficina||'MG Legal & Migration')}</h1><div class="ds">Asesoría legal y migratoria${a.telefono?' · Tel: '+esc(a.telefono):''}${a.correo?' · '+esc(a.correo):''}</div></div></div>`; }
 function docSign(){ const a=DB.meta.asesor; return `<div class="sign"><div class="line">${esc(a.nombre||'____________________')}<br>${esc(a.oficina||'MG Legal & Migration')}</div></div>`; }
@@ -470,7 +505,7 @@ function genLetter(kind,casoId){
     <p><b>QUINTO — Confidencialidad.</b> La Firma protegerá los datos del Cliente.</p>
     <p>En señal de conformidad, ambas partes firman:</p>
     <table style="margin-top:40px"><tr><td style="border:none;text-align:center">_______________________<br>La Firma</td><td style="border:none;text-align:center">_______________________<br>${nom}</td></tr></table>`;
-    previewDoc(`${H}<h2>${t}</h2>${b}`,'Contrato de servicios'); return;
+    previewDoc(`${H}<h2>${t}</h2>${b}`,'Contrato de servicios',c.id); return;
   }
   if(kind==='cover'){ t='Carta de Presentación (Cover Letter)';
     b=`<p>A quien corresponda / Sección Consular:</p>
@@ -500,7 +535,7 @@ function genLetter(kind,casoId){
     <p>Esta autorización incluye la entrega y recepción de documentos relacionados con el expediente.</p>`;
   }
   else { t='Documento'; b='<p>—</p>'; }
-  previewDoc(`${H}<h2>${t}</h2>${b}${docSign()}`,t);
+  previewDoc(`${H}<h2>${t}</h2>${b}${docSign()}`,t,c.id);
 }
 
 async function expedienteMaestro(casoId){
@@ -529,14 +564,14 @@ async function expedienteMaestro(casoId){
   let imgs='';
   for(const at of atts){ try{ const f=await window.api.fileDataUrl(at.stored); if(f&&f.isImage) imgs+=`<div class="pagebreak"><h2>${esc(at.name)}</h2><img class="imgdoc" src="${f.dataUrl}"></div>`; }catch(e){} }
   if(!imgs&&atts.length) imgs=`<div class="pagebreak"><h2>Adjuntos</h2><p>${atts.map(a=>esc(a.name)).join('<br>')}</p></div>`;
-  previewDoc(cover+chk+imgs,'Expediente maestro');
+  previewDoc(cover+chk+imgs,'Expediente maestro',casoId);
 }
 function printEntrevista(casoId){
   const c=DB.casos.find(x=>x.id===casoId); const cli=DB.clientes.find(x=>x.id===c.clienteId)||{};
   const qs=INTERVIEW[c.tipo]||INTERVIEW['_'];
   previewDoc(`${docHeader()}<h2>Simulacro de Entrevista Consular — ${esc(c.tipo)}</h2>
     <p><b>Cliente:</b> ${esc(cli.nombre||'')}</p>
-    <ol>${qs.map(q=>`<li style="margin-bottom:14px">${esc(q)}<br><span style="color:#999">Respuesta: ____________________________________________</span></li>`).join('')}</ol>`,'Simulacro de entrevista');
+    <ol>${qs.map(q=>`<li style="margin-bottom:14px">${esc(q)}<br><span style="color:#999">Respuesta: ____________________________________________</span></li>`).join('')}</ol>`,'Simulacro de entrevista',casoId);
 }
 
 // -------- Bitácora (inmutable) --------

@@ -137,6 +137,40 @@ ipcMain.handle('file:dataurl', (e, storedName) => {
   } catch (err) { return null; }
 });
 
+// Exportar un documento (HTML) a PDF o PNG real, con diálogo de guardado
+const { BrowserWindow: _BW } = require('electron');
+ipcMain.handle('doc:export', async (e, { html, format, suggested }) => {
+  let bw = null;
+  const tmpHtml = path.join(USER, '._docexport.html');
+  try {
+    fs.writeFileSync(tmpHtml, html, 'utf8');
+    bw = new _BW({ show: false, width: 820, height: 1200, x: -3200, y: -3200 });
+    await bw.loadFile(tmpHtml);
+    await new Promise(r => setTimeout(r, 250));
+    if (format === 'pdf') {
+      const buf = await bw.webContents.printToPDF({ printBackground: true, pageSize: 'Letter' });
+      const r = await dialog.showSaveDialog(win, { title: 'Guardar PDF', defaultPath: suggested || 'documento.pdf', filters: [{ name: 'PDF', extensions: ['pdf'] }] });
+      if (r.canceled || !r.filePath) return null;
+      fs.writeFileSync(r.filePath, buf); shell.showItemInFolder(r.filePath); return r.filePath;
+    } else {
+      const h = await bw.webContents.executeJavaScript('document.body.scrollHeight');
+      bw.setContentSize(820, Math.max(300, Math.ceil(h)));
+      bw.showInactive(); // renderiza fuera de pantalla para garantizar la captura
+      await new Promise(r => setTimeout(r, 400));
+      const img = await bw.webContents.capturePage();
+      const png = img.toPNG();
+      const r = await dialog.showSaveDialog(win, { title: 'Guardar PNG', defaultPath: suggested || 'documento.png', filters: [{ name: 'Imagen PNG', extensions: ['png'] }] });
+      if (r.canceled || !r.filePath) return null;
+      fs.writeFileSync(r.filePath, png); shell.showItemInFolder(r.filePath); return r.filePath;
+    }
+  } catch (err) {
+    return { error: String(err) };
+  } finally {
+    try { if (bw) bw.destroy(); } catch (e) {}
+    try { fs.unlinkSync(tmpHtml); } catch (e) {}
+  }
+});
+
 // Enviar a WhatsApp (abre WhatsApp Desktop/Web con el mensaje precargado)
 ipcMain.handle('wa:send', (e, { phone, text }) => {
   const clean = String(phone || '').replace(/[^\d]/g, '');

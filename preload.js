@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('api', {
   attachFile:  ()            => ipcRenderer.invoke('file:attach'),
   openFile:    (stored)      => ipcRenderer.invoke('file:open', stored),
   fileDataUrl: (stored)      => ipcRenderer.invoke('file:dataurl', stored),
+  docExport:   (format, html, suggested) => ipcRenderer.invoke('doc:export', { format, html, suggested }),
   sendWhatsApp:(phone, text) => ipcRenderer.invoke('wa:send', { phone, text }),
   exportSave:  (suggested, content) => ipcRenderer.invoke('export:save', { suggested, content }),
   openBackups: ()            => ipcRenderer.invoke('backup:folder'),
