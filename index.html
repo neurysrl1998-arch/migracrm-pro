@@ -206,6 +206,62 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .log-item .t{font-size:11px;color:var(--mut2)}
 .letter-btn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:13px 15px}
 .letter-btn small{font-weight:400;color:var(--mut);font-size:11px}
+/* ---------- Animaciones profesionales ---------- */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes popIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+@keyframes slideRight{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes spinIn{from{opacity:0;transform:rotate(-10deg) scale(.85)}to{opacity:1;transform:none}}
+@keyframes loginOut{to{opacity:0;transform:scale(1.05);visibility:hidden}}
+#view{animation:fadeUp .34s ease}
+.card{animation:fadeUp .4s ease both;transition:box-shadow .2s ease,transform .2s ease}
+.kpi{animation:popIn .46s cubic-bezier(.2,.85,.3,1) both;transition:transform .18s ease,box-shadow .18s ease}
+.kpi:hover{transform:translateY(-4px);box-shadow:0 12px 26px rgba(0,0,0,.28)}
+.kpis .kpi:nth-child(2){animation-delay:.05s}.kpis .kpi:nth-child(3){animation-delay:.1s}.kpis .kpi:nth-child(4){animation-delay:.15s}.kpis .kpi:nth-child(5){animation-delay:.2s}
+.nav button{animation:slideRight .32s ease both}
+.nav button:nth-child(2){animation-delay:.03s}.nav button:nth-child(3){animation-delay:.06s}.nav button:nth-child(4){animation-delay:.09s}.nav button:nth-child(5){animation-delay:.12s}.nav button:nth-child(6){animation-delay:.15s}.nav button:nth-child(7){animation-delay:.18s}.nav button:nth-child(n+8){animation-delay:.21s}
+.overlay.on .modal{animation:popIn .26s cubic-bezier(.2,.85,.3,1)}
+.btn{transition:transform .12s ease,border-color .15s ease,color .15s ease,filter .15s ease,background .15s ease}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:scale(.95)}
+.fchip,.iconbtn,.estado-sel,.tag{transition:all .14s ease}
+.kc{transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease}
+
+/* ---------- Login ---------- */
+#login{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(900px 500px at 50% 0%, rgba(217,180,91,.16), transparent 62%), linear-gradient(180deg,#0b1120,#0e1320)}
+#login.hide{animation:loginOut .42s ease forwards}
+.login-card{width:380px;max-width:92vw;background:linear-gradient(180deg,#1a2338,#141b2d);border:1px solid var(--line);border-radius:20px;padding:34px 30px 28px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.55);animation:popIn .5s cubic-bezier(.2,.85,.3,1)}
+.login-logo{width:90px;height:90px;margin:0 auto 12px;animation:spinIn .6s ease both, floaty 4.5s ease-in-out 1s infinite}
+.login-logo svg,.login-logo img{width:100%;height:100%;object-fit:contain;border-radius:14px}
+.login-brand{font-size:26px;font-weight:800;letter-spacing:1px;color:var(--txt)}
+.login-brand span{color:var(--gold)}
+.login-sub{font-size:10px;letter-spacing:2.5px;color:var(--mut2);margin-bottom:22px}
+.login-card .fg{text-align:left;margin-bottom:13px}
+.login-card input{width:100%}
+.login-err{color:var(--red);font-size:12px;min-height:16px;margin:2px 0 4px;text-align:left}
+.login-card .btn{width:100%;justify-content:center;margin-top:6px}
+
+/* ---------- Recuadro de usuario ---------- */
+#userbox:empty{display:none}
+#userbox{display:flex;align-items:center;gap:9px;padding:8px;border-radius:10px;background:var(--panel);margin-bottom:9px;animation:fadeUp .4s ease}
+#userbox .av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#241c05;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex:0 0 auto}
+#userbox .un{font-size:12px;font-weight:700;line-height:1.15;color:var(--txt)}
+#userbox .ur{font-size:10px;color:var(--gold2)}
+#userbox .lo{margin-left:auto;background:transparent;color:var(--mut);border:1px solid var(--line);border-radius:7px;padding:5px 9px;font-size:11px;font-weight:600}
+#userbox .lo:hover{color:var(--red);border-color:#5a2b30}
+
+/* ---------- Editor de plantillas ---------- */
+.tpl-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tpl-tabs button{padding:8px 12px;border-radius:8px;background:var(--panel);border:1px solid var(--line);color:var(--mut);font-size:12px;font-weight:600;transition:all .14s}
+.tpl-tabs button.on{border-color:var(--gold);color:var(--gold2);background:rgba(217,180,91,.12)}
+.tpl-tokens{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 12px}
+.tpl-tokens button{font-family:monospace;font-size:11px;padding:5px 9px;border-radius:7px;background:var(--panel2);border:1px solid var(--line);color:var(--gold2);transition:all .14s}
+.tpl-tokens button:hover{border-color:var(--gold);transform:translateY(-1px)}
+.tpl-edit{background:#fff;color:#111;border-radius:8px;padding:26px 30px;min-height:260px;outline:none;font-family:Georgia,serif;line-height:1.65;box-shadow:inset 0 0 0 1px #ddd}
+.tpl-edit:focus{box-shadow:inset 0 0 0 2px var(--gold)}
+.tpl-edit b{color:#111}
+
 /* Vista previa de documento (hoja blanca dentro de la app) */
 .doc-preview{background:#fff;box-shadow:0 8px 34px rgba(0,0,0,.45);border-radius:4px;max-width:760px;margin:0 auto;min-height:400px}
 .doc-preview .doc-sheet{outline:none}
@@ -246,6 +302,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     </div>
     <nav class="nav" id="nav"></nav>
     <div class="sidefoot">
+      <div id="userbox"></div>
       <div><span class="savedot" id="savedot"></span><span id="savetxt">Guardado</span></div>
       <div style="margin-top:6px" id="footinfo"></div>
     </div>
@@ -272,6 +329,12 @@ tr:hover td{background:rgba(255,255,255,.02)}
 <div class="toast" id="toast"></div>
 <div id="upd-banner"></div>
 <div id="printdoc"></div>
+<div id="login"><div class="login-card">
+  <div class="login-logo" id="loginLogo"></div>
+  <div class="login-brand">M.G.L.<span>&amp;M</span></div>
+  <div class="login-sub">MG LEGAL &amp; MIGRATION</div>
+  <div id="loginBody"></div>
+</div></div>
 
 <script>
 // ============================================================================
@@ -294,7 +357,7 @@ if (!window.api) {
     exportSave:  (name, content) => { const b=new Blob([content],{type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name; a.click(); return name; },
     openBackups: () => alert('La carpeta de respaldos está disponible en la app de escritorio.'),
     paths:       () => ({ data:'(navegador)', backups:'(navegador)', adjuntos:'(navegador)' }),
-    version:     () => '1.4.1',
+    version:     () => '1.5.0',
     onUpdateStatus: () => {},
     updateInstall:  () => {},
     updateCheck:    () => {}
@@ -344,6 +407,7 @@ const DEFAULT_LOGO_SVG = `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/20
 function logoHTML(){ const d=DB&&DB.meta&&DB.meta.asesor&&DB.meta.asesor.logoData; return d?`<img src="${d}" alt="logo">`:DEFAULT_LOGO_SVG; }
 function paintBrand(){
   const w=$('#brandLogoWrap'); if(w)w.innerHTML=logoHTML();
+  const ll=$('#loginLogo'); if(ll)ll.innerHTML=logoHTML();
   const a=(DB&&DB.meta&&DB.meta.asesor)||{};
   const c=(DB&&DB.meta&&DB.meta.config)||{};
   const contacto=[a.telefono&&('Tel: '+a.telefono),a.correo,c.pais].filter(Boolean).join(' · ');
@@ -489,54 +553,62 @@ function docLogo(){ const d=DB.meta.asesor.logoData; return `<div class="dl">${d
 function docHeader(){ const a=DB.meta.asesor; return `<div class="dh">${docLogo()}<div><h1>${esc(a.oficina||'MG Legal & Migration')}</h1><div class="ds">Asesoría legal y migratoria${a.telefono?' · Tel: '+esc(a.telefono):''}${a.correo?' · '+esc(a.correo):''}</div></div></div>`; }
 function docSign(){ const a=DB.meta.asesor; return `<div class="sign"><div class="line">${esc(a.nombre||'____________________')}<br>${esc(a.oficina||'MG Legal & Migration')}</div></div>`; }
 
+// Plantillas de documentos por DEFECTO (el administrador puede editarlas). Usan tokens {{...}}.
+const DEFAULT_PLANTILLAS={
+  contrato:{nombre:'Contrato de Servicios de Asesoría Migratoria', cuerpo:
+`<p>Entre <b>{{oficina}}</b> (en adelante, "la Firma") y <b>{{cliente}}</b>, documento {{documento}} (en adelante, "el Cliente"), se acuerda:</p>
+<p><b>PRIMERO — Objeto.</b> La Firma prestará asesoría y acompañamiento para el trámite de <b>{{tipo}}</b> con destino a {{destino}}.</p>
+<p><b>SEGUNDO — Alcance.</b> La Firma orientará en la preparación de documentos, llenado de formularios y seguimiento del expediente. La decisión final corresponde a la autoridad migratoria; la Firma no garantiza la aprobación.</p>
+<p><b>TERCERO — Honorarios.</b> El Cliente pagará los honorarios acordados por un total de <b>{{total}}</b>, además de las tasas oficiales que correspondan.</p>
+<p><b>CUARTO — Obligaciones del Cliente.</b> Entregar información veraz y la documentación requerida en tiempo.</p>
+<p><b>QUINTO — Confidencialidad.</b> La Firma protegerá los datos del Cliente.</p>
+<p>En señal de conformidad, ambas partes firman:</p>
+<table style="margin-top:40px"><tr><td style="border:none;text-align:center">_______________________<br>La Firma</td><td style="border:none;text-align:center">_______________________<br>{{cliente}}</td></tr></table>`},
+  cover:{nombre:'Carta de Presentación (Cover Letter)', cuerpo:
+`<p>A quien corresponda / Sección Consular:</p>
+<p>Por medio de la presente, presento el caso del(la) solicitante <b>{{cliente}}</b>, {{documento}}, nacional de {{pais}}, quien solicita <b>{{tipo}}</b> con destino a {{destino}}.</p>
+<p>El(la) solicitante cuenta con la documentación de respaldo correspondiente y un motivo de viaje claro y legítimo. Adjunto el expediente con los soportes requeridos.</p>
+<p>Agradezco la atención a la presente solicitud y quedo a disposición para cualquier aclaración.</p>
+{{firma}}`},
+  invitacion:{nombre:'Carta de Invitación', cuerpo:
+`<p>Yo, [NOMBRE DEL ANFITRIÓN], con documento [DOC ANFITRIÓN] y domicilio en [DIRECCIÓN EN {{destino}}], por medio de la presente <b>invito</b> a <b>{{cliente}}</b>, {{documento}}, nacional de {{pais}}, a visitarme.</p>
+<p>Me hago responsable de su alojamiento durante su estadía. El motivo de la visita es [MOTIVO] y la duración prevista es de [DÍAS].</p>
+<p>Sin otro particular, quedo a disposición de las autoridades para verificar esta invitación.</p>
+{{firma}}`},
+  sustento:{nombre:'Carta de Sustento Económico', cuerpo:
+`<p>A quien corresponda:</p>
+<p>Por medio de la presente hago constar que <b>{{cliente}}</b>, {{documento}}, cuenta con los medios económicos para cubrir los gastos de su trámite de <b>{{tipo}}</b> y su estadía en {{destino}}.</p>
+<p>Se adjuntan estados de cuenta, comprobantes de ingresos y demás soportes que acreditan la solvencia del(la) solicitante.</p>
+{{firma}}`},
+  jurada:{nombre:'Declaración Jurada', cuerpo:
+`<p>Yo, <b>{{cliente}}</b>, {{documento}}, nacional de {{pais}}, <b>declaro bajo juramento</b> que:</p>
+<p>1. Toda la información y documentación aportada para mi trámite de <b>{{tipo}}</b> es verídica y auténtica.</p>
+<p>2. El motivo de mi solicitud es legítimo.</p>
+<p>3. Me comprometo a cumplir las leyes migratorias de {{destino}}.</p>
+<p>Firmo la presente para los fines legales que correspondan.</p>
+{{firma}}`},
+  poder:{nombre:'Carta Poder / Autorización de Representación', cuerpo:
+`<p>Yo, <b>{{cliente}}</b>, {{documento}}, nacional de {{pais}}, <b>autorizo</b> a <b>{{oficina}}</b> y a su representante {{asesor}} a gestionar, presentar y dar seguimiento a mi trámite de <b>{{tipo}}</b> ante las autoridades correspondientes.</p>
+<p>Esta autorización incluye la entrega y recepción de documentos relacionados con el expediente.</p>
+{{firma}}`}
+};
+const PLANTILLA_ORDEN=['contrato','cover','invitacion','sustento','jurada','poder'];
+const TOKENS_INFO=[['{{cliente}}','Nombre del cliente'],['{{documento}}','Documento/cédula/pasaporte'],['{{pais}}','País de origen'],['{{tipo}}','Tipo de trámite'],['{{destino}}','País destino'],['{{expediente}}','N° de expediente'],['{{oficina}}','Nombre de tu oficina/marca'],['{{asesor}}','Nombre del asesor'],['{{telefono}}','Teléfono'],['{{correo}}','Correo'],['{{fecha}}','Fecha de hoy'],['{{total}}','Total de honorarios del caso'],['{{firma}}','Bloque de firma']];
+function getPlantilla(kind){ return (DB.plantillas&&DB.plantillas[kind]) || DEFAULT_PLANTILLAS[kind]; }
+function applyTokens(str,map){ return String(str).replace(/\{\{(\w+)\}\}/g,(m,k)=> (k in map)? map[k] : m); }
+function tokenMap(c,cli){
+  const a=DB.meta.asesor; const total=DB.pagos.filter(p=>p.casoId===c.id).reduce((s,p)=>s+Number(p.monto||0),0);
+  return { cliente:esc(cli.nombre||'[NOMBRE DEL CLIENTE]'), documento:esc(cli.documento||'[DOCUMENTO]'), pais:esc(cli.pais||'[PAÍS]'),
+    tipo:esc(c.tipo), destino:esc(c.destino||'[PAÍS DESTINO]'), expediente:esc(c.expediente||'—'),
+    oficina:esc(a.oficina||'MG Legal & Migration'), asesor:esc(a.nombre||'[ASESOR]'), telefono:esc(a.telefono||''), correo:esc(a.correo||''),
+    fecha:fechaLarga(), total: total?money(total):'[MONTO]', firma: docSign() };
+}
 function genLetter(kind,casoId){
-  const c=DB.casos.find(x=>x.id===casoId); const cli=DB.clientes.find(x=>x.id===c.clienteId)||{}; const a=DB.meta.asesor;
-  const nom=esc(cli.nombre||'[NOMBRE DEL CLIENTE]'); const doc=esc(cli.documento||'[DOCUMENTO]'); const pais=esc(cli.pais||'[PAÍS]');
-  const destino=esc(c.destino||'[PAÍS DESTINO]'); const tipo=esc(c.tipo);
+  const c=DB.casos.find(x=>x.id===casoId); if(!c)return; const cli=DB.clientes.find(x=>x.id===c.clienteId)||{};
+  const pl=getPlantilla(kind); if(!pl)return;
+  const body=applyTokens(pl.cuerpo,tokenMap(c,cli));
   const H=docHeader()+`<p style="text-align:right">${fechaLarga()}</p>`;
-  let t='',b='';
-  if(kind==='contrato'){
-    const pagos=DB.pagos.filter(p=>p.casoId===c.id); const total=pagos.reduce((s,p)=>s+Number(p.monto||0),0);
-    t='Contrato de Servicios de Asesoría Migratoria';
-    b=`<p>Entre <b>${esc(a.oficina||'MG Legal & Migration')}</b> (en adelante, “la Firma”) y <b>${nom}</b>, documento ${doc} (en adelante, “el Cliente”), se acuerda:</p>
-    <p><b>PRIMERO — Objeto.</b> La Firma prestará asesoría y acompañamiento para el trámite de <b>${tipo}</b> con destino a ${destino}.</p>
-    <p><b>SEGUNDO — Alcance.</b> La Firma orientará en la preparación de documentos, llenado de formularios y seguimiento del expediente. La decisión final corresponde a la autoridad migratoria; la Firma no garantiza la aprobación.</p>
-    <p><b>TERCERO — Honorarios.</b> El Cliente pagará los honorarios acordados${total?` por un total de <b>${money(total)}</b>`:''}, además de las tasas oficiales que correspondan.</p>
-    <p><b>CUARTO — Obligaciones del Cliente.</b> Entregar información veraz y la documentación requerida en tiempo.</p>
-    <p><b>QUINTO — Confidencialidad.</b> La Firma protegerá los datos del Cliente.</p>
-    <p>En señal de conformidad, ambas partes firman:</p>
-    <table style="margin-top:40px"><tr><td style="border:none;text-align:center">_______________________<br>La Firma</td><td style="border:none;text-align:center">_______________________<br>${nom}</td></tr></table>`;
-    previewDoc(`${H}<h2>${t}</h2>${b}`,'Contrato de servicios',c.id); return;
-  }
-  if(kind==='cover'){ t='Carta de Presentación (Cover Letter)';
-    b=`<p>A quien corresponda / Sección Consular:</p>
-    <p>Por medio de la presente, presento el caso del(la) solicitante <b>${nom}</b>, ${doc}, nacional de ${pais}, quien solicita <b>${tipo}</b> con destino a ${destino}.</p>
-    <p>El(la) solicitante cuenta con la documentación de respaldo correspondiente y un motivo de viaje claro y legítimo. Adjunto el expediente con los soportes requeridos.</p>
-    <p>Agradezco la atención a la presente solicitud y quedo a disposición para cualquier aclaración.</p>`;
-  }
-  else if(kind==='invitacion'){ t='Carta de Invitación';
-    b=`<p>Yo, [NOMBRE DEL ANFITRIÓN], con documento [DOC ANFITRIÓN] y domicilio en [DIRECCIÓN EN ${destino}], por medio de la presente <b>invito</b> a <b>${nom}</b>, ${doc}, nacional de ${pais}, a visitarme.</p>
-    <p>Me hago responsable de su alojamiento durante su estadía. El motivo de la visita es [MOTIVO] y la duración prevista es de [DÍAS].</p>
-    <p>Sin otro particular, quedo a disposición de las autoridades para verificar esta invitación.</p>`;
-  }
-  else if(kind==='sustento'){ t='Carta de Sustento Económico';
-    b=`<p>A quien corresponda:</p>
-    <p>Por medio de la presente hago constar que <b>${nom}</b>, ${doc}, cuenta con los medios económicos para cubrir los gastos de su trámite de <b>${tipo}</b> y su estadía en ${destino}.</p>
-    <p>Se adjuntan estados de cuenta, comprobantes de ingresos y demás soportes que acreditan la solvencia del(la) solicitante.</p>`;
-  }
-  else if(kind==='jurada'){ t='Declaración Jurada';
-    b=`<p>Yo, <b>${nom}</b>, ${doc}, nacional de ${pais}, <b>declaro bajo juramento</b> que:</p>
-    <p>1. Toda la información y documentación aportada para mi trámite de <b>${tipo}</b> es verídica y auténtica.</p>
-    <p>2. El motivo de mi solicitud es legítimo.</p>
-    <p>3. Me comprometo a cumplir las leyes migratorias de ${destino}.</p>
-    <p>Firmo la presente para los fines legales que correspondan.</p>`;
-  }
-  else if(kind==='poder'){ t='Carta Poder / Autorización de Representación';
-    b=`<p>Yo, <b>${nom}</b>, ${doc}, nacional de ${pais}, <b>autorizo</b> a <b>${esc(a.oficina||'MG Legal & Migration')}</b> y a su representante ${esc(a.nombre||'[ASESOR]')} a gestionar, presentar y dar seguimiento a mi trámite de <b>${tipo}</b> ante las autoridades correspondientes.</p>
-    <p>Esta autorización incluye la entrega y recepción de documentos relacionados con el expediente.</p>`;
-  }
-  else { t='Documento'; b='<p>—</p>'; }
-  previewDoc(`${H}<h2>${t}</h2>${b}${docSign()}`,t,c.id);
+  previewDoc(`${H}<h2>${esc(pl.nombre)}</h2>${body}`, pl.nombre, c.id);
 }
 
 async function expedienteMaestro(casoId){
@@ -623,12 +695,13 @@ async function boot(){
     DB = raw ? JSON.parse(raw) : blankDB();
   }catch(e){ DB = blankDB(); }
   // asegurar arreglos
-  ['clientes','casos','pagos','leads','citas','bitacora'].forEach(k=>{ if(!Array.isArray(DB[k])) DB[k]=[]; });
+  ['clientes','casos','pagos','leads','citas','bitacora','usuarios'].forEach(k=>{ if(!Array.isArray(DB[k])) DB[k]=[]; });
   if(!DB.meta) DB.meta = blankDB().meta;
+  if(!DB.plantillas) DB.plantillas = JSON.parse(JSON.stringify(DEFAULT_PLANTILLAS));
   const p = await window.api.paths();
   try{ appVersion = await window.api.version(); }catch(e){}
   $('#footinfo').innerHTML = 'BD local segura · v'+esc(appVersion||'')+'<br>'+esc(DB.meta.config.pais||'');
-  paintBrand(); buildNav(); render();
+  paintBrand(); showAuth();
 }
 
 // -------- Guardado con autoguardado (debounce) --------
@@ -669,13 +742,21 @@ const TABS = [
   {k:'citas',  i:'📅', t:'Citas'},
   {k:'renov',  i:'🔁', t:'Renovaciones'},
   {k:'rep',    i:'📈', t:'Reportes'},
-  {k:'cfg',    i:'⚙️', t:'Configuración'}
+  {k:'plantillas', i:'📝', t:'Plantillas', admin:true},
+  {k:'usuarios',   i:'👥', t:'Usuarios', admin:true},
+  {k:'cfg',    i:'⚙️', t:'Configuración', admin:true}
 ];
 function buildNav(){
-  $('#nav').innerHTML = TABS.map(t=>`<button data-k="${t.k}" class="${t.k===currentTab?'on':''}">
+  const tabs=TABS.filter(t=>!t.admin || isAdmin());
+  $('#nav').innerHTML = tabs.map(t=>`<button data-k="${t.k}" class="${t.k===currentTab?'on':''}">
     <span class="ico">${t.i}</span><span>${t.t}</span><span class="badge" id="bdg-${t.k}" style="display:none"></span></button>`).join('');
   $('#nav').querySelectorAll('button').forEach(b=>b.onclick=()=>{ currentTab=b.dataset.k; buildNav(); render(); });
-  updateBadges();
+  updateBadges(); paintUserBox();
+}
+function paintUserBox(){
+  const b=$('#userbox'); if(!b)return; if(!session){ b.innerHTML=''; return; }
+  const ini=(session.nombre||'?').trim().charAt(0).toUpperCase();
+  b.innerHTML=`<div class="av">${esc(ini)}</div><div><div class="un">${esc(session.nombre)}</div><div class="ur">${session.rol==='admin'?'Administrador':'Usuario'}</div></div><button class="lo" onclick="logout()">Salir</button>`;
 }
 function updateBadges(){
   const venc = allVencimientos().filter(v=>v.days!==null && v.days<=7).length;
@@ -688,9 +769,10 @@ function updateBadges(){
 //  RENDER PRINCIPAL
 // ============================================================================
 function render(){
-  const tab = TABS.find(t=>t.k===currentTab);
+  let tab = TABS.find(t=>t.k===currentTab);
+  if(!tab || (tab.admin && !isAdmin())){ currentTab='dash'; tab=TABS[0]; buildNav(); }
   $('#ttl').textContent = tab.t;
-  const map = {dash:renderDash,casos:renderCasos,clientes:renderClientes,venc:renderVenc,record:renderRecord,fin:renderFin,leads:renderLeads,citas:renderCitas,renov:renderRenov,rep:renderRep,cfg:renderCfg};
+  const map = {dash:renderDash,casos:renderCasos,clientes:renderClientes,venc:renderVenc,record:renderRecord,fin:renderFin,leads:renderLeads,citas:renderCitas,renov:renderRenov,rep:renderRep,plantillas:renderPlantillas,usuarios:renderUsuarios,cfg:renderCfg};
   $('#tsub').textContent = subFor(currentTab);
   $('#view').innerHTML = map[currentTab]();
   wire();
@@ -1133,14 +1215,6 @@ function openCliente(id){
   const c=id?DB.clientes.find(x=>x.id===id):{};
   modal(`<div class="mh"><h3>${id?'Editar':'Nuevo'} cliente</h3><button class="x" onclick="closeModal()">✕</button></div>
   <div class="mb">
-    <div style="margin-bottom:14px;padding:12px;background:var(--bg);border:1px solid var(--line);border-radius:9px">
-      <button class="btn" type="button" onclick="toggleMRZ()">🛂 Escanear pasaporte (MRZ)</button>
-      <div class="hint" style="margin-top:6px">Autollena nombre, documento y país con las 2 líneas de códigos (&lt;&lt;&lt;) del final del pasaporte.</div>
-      <div id="mrzBox" style="display:none;margin-top:10px">
-        <textarea id="mrzInput" rows="2" placeholder="Pega aquí las 2 líneas MRZ del pasaporte…" style="width:100%;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px;color:var(--txt);font-family:monospace;font-size:12px"></textarea>
-        <button class="btn gold sm" type="button" style="margin-top:6px" onclick="readMRZInline()">Leer datos</button>
-      </div>
-    </div>
     <div class="fg"><label>Nombre completo *</label><input id="clNombre" value="${esc(c.nombre||'')}"></div>
     <div class="frow"><div class="fg"><label>Teléfono (con código país)</label><input id="clTel" placeholder="1809..." value="${esc(c.telefono||'')}"></div>
     <div class="fg"><label>Correo</label><input id="clCorreo" value="${esc(c.correo||'')}"></div></div>
@@ -1157,33 +1231,6 @@ function saveCliente(id){
   save();closeModal();render();toast('Cliente guardado');
 }
 function delCliente(id){ if(DB.casos.some(c=>c.clienteId===id))return toast('Tiene casos asociados; elimínalos primero'); if(confirm('¿Eliminar cliente?')){DB.clientes=DB.clientes.filter(c=>c.id!==id);save();render();} }
-// Lector de pasaporte (zona MRZ, formato TD3 de 2 líneas)
-function parseMRZ(raw){
-  const lines=String(raw||'').toUpperCase().replace(/[^A-Z0-9<\n]/g,'').split(/\n+/).map(s=>s.trim()).filter(Boolean);
-  let l1,l2;
-  for(let i=0;i<lines.length;i++){ if(lines[i][0]==='P'&&lines[i].includes('<')&&lines[i+1]){ l1=lines[i]; l2=lines[i+1]; break; } }
-  if((!l1||!l2)&&lines.length>=2){ l1=lines[lines.length-2]; l2=lines[lines.length-1]; }
-  if(!l1||!l2)return null;
-  const clean=s=>(s||'').replace(/</g,' ').replace(/\s+/g,' ').trim();
-  const namePart=l1.slice(5); const parts=namePart.split('<<');
-  const nombre=(clean(parts[1])+' '+clean(parts[0])).trim();
-  const documento=l2.slice(0,9).replace(/</g,'');
-  const nac=l2.slice(10,13).replace(/</g,'');
-  const fmt=(y,exp)=>{ if(!/^\d{6}$/.test(y))return ''; const yy=+y.slice(0,2); const year=exp?2000+yy:(yy>30?1900+yy:2000+yy); return year+'-'+y.slice(2,4)+'-'+y.slice(4,6); };
-  return {nombre,documento,nacionalidad:nac,nacimiento:fmt(l2.slice(13,19),false),expira:fmt(l2.slice(21,27),true)};
-}
-function toggleMRZ(){ const b=$('#mrzBox'); if(!b)return; b.style.display=b.style.display==='none'?'block':'none'; if(b.style.display!=='none'){ const t=$('#mrzInput'); if(t)t.focus(); } }
-function readMRZInline(){
-  const raw=$('#mrzInput')?$('#mrzInput').value:''; const m=parseMRZ(raw);
-  if(!m||!m.documento){ toast('No pude leer el MRZ. Pega las 2 líneas completas.'); return; }
-  if($('#clNombre')&&m.nombre)$('#clNombre').value=m.nombre;
-  if($('#clDoc'))$('#clDoc').value=m.documento;
-  if($('#clPais')&&m.nacionalidad)$('#clPais').value=m.nacionalidad;
-  const extra=`Pasaporte ${m.documento}${m.nacimiento?' · Nac: '+m.nacimiento:''}${m.expira?' · Vence: '+m.expira:''}`;
-  if($('#clNota'))$('#clNota').value=($('#clNota').value?$('#clNota').value+'\n':'')+extra;
-  const b=$('#mrzBox'); if(b)b.style.display='none';
-  toast('Datos del pasaporte cargados ✓');
-}
 
 // ---- Caso ----
 function openCaso(id){
@@ -1532,6 +1579,126 @@ function wipeData(){
   if(!confirm('¿Borrar TODOS los datos (clientes, casos, pagos, leads y citas)?\nNo se puede deshacer, pero hay respaldos en la carpeta de backups.'))return;
   DB.clientes=[];DB.casos=[];DB.pagos=[];DB.leads=[];DB.citas=[];DB.bitacora=[];
   save();render();toast('Datos borrados');
+}
+
+// ============================================================================
+//  MULTICUENTA — autenticación y roles
+// ============================================================================
+let session=null;
+function hashPass(s){ let h=5381; s=String(s); for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0; return 'h'+h.toString(36); }
+function isAdmin(){ return !!(session && session.rol==='admin'); }
+function showAuth(){ const l=$('#login'); l.classList.remove('hide'); l.style.display='flex'; if(!DB.usuarios.length) renderSetup(); else renderLogin(); }
+function renderLogin(){
+  $('#loginBody').innerHTML=`
+    <div class="fg"><label>Usuario</label><input id="loginUser"></div>
+    <div class="fg"><label>Contraseña</label><input id="loginPass" type="password"></div>
+    <div class="login-err" id="loginErr"></div>
+    <button class="btn gold" onclick="doLogin()">Ingresar</button>`;
+  setTimeout(()=>{ const u=$('#loginUser'),p=$('#loginPass'); if(u){u.focus();u.onkeydown=e=>{if(e.key==='Enter')p.focus();};} if(p)p.onkeydown=e=>{if(e.key==='Enter')doLogin();}; },60);
+}
+function renderSetup(){
+  $('#loginBody').innerHTML=`
+    <p class="hint" style="margin-bottom:14px">Bienvenida 👋 Crea tu cuenta de <b>administrador</b> para empezar.</p>
+    <div class="fg"><label>Tu nombre</label><input id="suNombre"></div>
+    <div class="fg"><label>Usuario</label><input id="suUser"></div>
+    <div class="fg"><label>Contraseña</label><input id="suPass" type="password"></div>
+    <div class="login-err" id="loginErr"></div>
+    <button class="btn gold" onclick="doSetup()">Crear cuenta</button>`;
+  setTimeout(()=>{ const n=$('#suNombre'); if(n)n.focus(); },60);
+}
+function doSetup(){
+  const nombre=$('#suNombre').value.trim(), user=$('#suUser').value.trim().toLowerCase(), pass=$('#suPass').value;
+  if(!nombre||!user||!pass){ $('#loginErr').textContent='Completa todos los campos.'; return; }
+  const u={id:uid(),nombre,usuario:user,pass:hashPass(pass),rol:'admin',creado:today()};
+  DB.usuarios.push(u); save(); session=u; enterApp();
+}
+function doLogin(){
+  const user=$('#loginUser').value.trim().toLowerCase(), pass=$('#loginPass').value;
+  const u=DB.usuarios.find(x=>x.usuario===user);
+  if(!u||u.pass!==hashPass(pass)){ $('#loginErr').textContent='Usuario o contraseña incorrectos.'; return; }
+  session=u; enterApp();
+}
+function enterApp(){
+  const l=$('#login'); l.classList.add('hide'); setTimeout(()=>{ l.style.display='none'; },420);
+  currentTab='dash'; buildNav(); render();
+  toast('Bienvenido/a, '+session.nombre+' 👋');
+}
+function logout(){ session=null; currentTab='dash'; closeModal(); showAuth(); }
+
+// ============================================================================
+//  PLANTILLAS (solo administrador)
+// ============================================================================
+let tplSel='contrato';
+function renderPlantillas(){
+  if(!isAdmin()) return emptyState('🔒','Solo administrador','Esta sección es exclusiva del administrador.');
+  const pl=getPlantilla(tplSel);
+  return `<div class="card"><h3>📝 Plantillas de documentos</h3>
+    <p class="hint" style="margin-bottom:12px">Editas el <b>modelo</b> de cada documento. Los usuarios solo lo generan y llenan los datos del cliente (no pueden cambiar la plantilla).</p>
+    <div class="tpl-tabs">${PLANTILLA_ORDEN.map(k=>`<button class="${tplSel===k?'on':''}" onclick="tplSelect('${k}')">${esc((getPlantilla(k)||{}).nombre||k)}</button>`).join('')}</div>
+    <div class="fg"><label>Título del documento</label><input id="tplNombre" value="${esc(pl.nombre)}"></div>
+    <label class="mini" style="display:block;margin-bottom:2px">Cuerpo — inserta datos dinámicos con estos botones (se reemplazan al generar):</label>
+    <div class="tpl-tokens">${TOKENS_INFO.map(t=>`<button title="${esc(t[1])}" onclick="tplInsert('${t[0]}')">${esc(t[0])}</button>`).join('')}</div>
+    <div class="tpl-edit" id="tplBody" contenteditable="true">${pl.cuerpo}</div>
+    <div class="wa-menu" style="margin-top:14px">
+      <button class="btn gold" onclick="tplSave()">💾 Guardar plantilla</button>
+      <button class="btn" onclick="tplPreview()">👁️ Vista previa (datos de ejemplo)</button>
+      <button class="btn red" onclick="tplReset()">↺ Restaurar original</button>
+    </div></div>`;
+}
+function tplSelect(k){ tplSel=k; render(); }
+function tplInsert(tok){ const el=$('#tplBody'); if(!el)return; el.focus(); try{ document.execCommand('insertText',false,tok); }catch(e){ el.innerHTML+=' '+tok; } }
+function tplSave(){ if(!DB.plantillas)DB.plantillas={}; DB.plantillas[tplSel]={nombre:$('#tplNombre').value.trim()||tplSel, cuerpo:$('#tplBody').innerHTML}; save(); toast('Plantilla guardada ✓'); }
+function tplReset(){ if(!confirm('¿Restaurar esta plantilla al texto original de fábrica?'))return; if(!DB.plantillas)DB.plantillas={}; DB.plantillas[tplSel]=JSON.parse(JSON.stringify(DEFAULT_PLANTILLAS[tplSel])); save(); render(); toast('Plantilla restaurada'); }
+function tplPreview(){
+  const demoC={tipo:'Visa de Trabajo',destino:'Estados Unidos',expediente:'EXP-12345',id:'_demo_'};
+  const demoCli={nombre:'Juan Pérez',documento:'001-1234567-8',pais:'República Dominicana'};
+  const nombre=$('#tplNombre').value.trim()||'Documento';
+  const body=applyTokens($('#tplBody').innerHTML, tokenMap(demoC,demoCli));
+  previewDoc(`${docHeader()}<p style="text-align:right">${fechaLarga()}</p><h2>${esc(nombre)}</h2>${body}`, nombre);
+}
+
+// ============================================================================
+//  USUARIOS (solo administrador)
+// ============================================================================
+function renderUsuarios(){
+  if(!isAdmin()) return emptyState('🔒','Solo administrador','Esta sección es exclusiva del administrador.');
+  return `<div class="card"><h3>👥 Usuarios <span class="grow"></span><button class="btn gold sm" onclick="openUsuario()">+ Usuario</button></h3>
+    <table><thead><tr><th>Nombre</th><th>Usuario</th><th>Rol</th><th>Acciones</th></tr></thead><tbody>
+    ${DB.usuarios.map(u=>`<tr>
+      <td><b>${esc(u.nombre)}</b>${u.id===session.id?' <span class="tag t-blue">tú</span>':''}</td>
+      <td class="mini">${esc(u.usuario)}</td>
+      <td><span class="tag ${u.rol==='admin'?'t-amber':'t-gray'}">${u.rol==='admin'?'Administrador':'Usuario'}</span></td>
+      <td class="tbl-actions">
+        <button class="iconbtn" onclick="openUsuario('${u.id}')">✏️</button>
+        ${u.id!==session.id?`<button class="iconbtn" onclick="delUsuario('${u.id}')">🗑️</button>`:''}
+      </td></tr>`).join('')}
+    </tbody></table>
+    <p class="hint" style="margin-top:10px">El <b>Administrador</b> edita plantillas, la marca y gestiona usuarios. El <b>Usuario</b> gestiona clientes, casos y documentos con las plantillas ya definidas, sin poder cambiarlas.</p></div>`;
+}
+function openUsuario(id){
+  const u=id?DB.usuarios.find(x=>x.id===id):{rol:'usuario'};
+  modal(`<div class="mh"><h3>${id?'Editar':'Nuevo'} usuario</h3><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="mb">
+    <div class="fg"><label>Nombre</label><input id="uNombre" value="${esc(u.nombre||'')}"></div>
+    <div class="fg"><label>Usuario (para iniciar sesión)</label><input id="uUser" value="${esc(u.usuario||'')}"></div>
+    <div class="fg"><label>Contraseña ${id?'<span class="mini">(dejar en blanco para no cambiar)</span>':''}</label><input id="uPass" type="password"></div>
+    <div class="fg"><label>Rol</label><select id="uRol" ${id&&id===session.id?'disabled':''}>${['usuario','admin'].map(r=>`<option value="${r}" ${u.rol===r?'selected':''}>${r==='admin'?'Administrador':'Usuario'}</option>`).join('')}</select></div>
+  </div>
+  <div class="mf"><button class="btn ghost" onclick="closeModal()">Cancelar</button><button class="btn gold" onclick="saveUsuario('${id||''}')">Guardar</button></div>`);
+}
+function saveUsuario(id){
+  const nombre=$('#uNombre').value.trim(), user=$('#uUser').value.trim().toLowerCase(), pass=$('#uPass').value, rol=$('#uRol').value;
+  if(!nombre||!user)return toast('Nombre y usuario obligatorios');
+  if(DB.usuarios.some(x=>x.usuario===user && x.id!==id))return toast('Ese usuario ya existe');
+  if(id){ const u=DB.usuarios.find(x=>x.id===id); u.nombre=nombre; u.usuario=user; if(pass)u.pass=hashPass(pass); if(id!==session.id)u.rol=rol; if(u.id===session.id)session=u; }
+  else { if(!pass)return toast('Ponle una contraseña'); DB.usuarios.push({id:uid(),nombre,usuario:user,pass:hashPass(pass),rol,creado:today()}); }
+  save(); closeModal(); render(); toast('Usuario guardado');
+}
+function delUsuario(id){
+  if(id===session.id)return toast('No puedes eliminarte a ti mismo');
+  const u=DB.usuarios.find(x=>x.id===id); if(!u)return;
+  if(u.rol==='admin' && DB.usuarios.filter(x=>x.rol==='admin').length<=1)return toast('Debe quedar al menos un administrador');
+  if(confirm('¿Eliminar usuario?')){ DB.usuarios=DB.usuarios.filter(x=>x.id!==id); save(); render(); }
 }
 
 // ---- Búsqueda ----
