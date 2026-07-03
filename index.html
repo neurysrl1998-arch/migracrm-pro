@@ -22,8 +22,9 @@ input,select,textarea{font-family:inherit}
 
 /* ---------- Layout ---------- */
 #app{display:grid;grid-template-columns:230px 1fr;height:100vh}
-#side{background:linear-gradient(180deg,#121a2e,#0d1322);border-right:1px solid var(--line);display:flex;flex-direction:column}
-.brand{padding:18px 16px 14px;border-bottom:1px solid var(--line);text-align:center}
+#side{background:linear-gradient(180deg,#121a2e,#0d1322);border-right:1px solid var(--line);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.brand{padding:18px 16px 14px;border-bottom:1px solid var(--line);text-align:center;flex:0 0 auto}
+.sidefoot{flex:0 0 auto}
 .brand .logo-wrap{width:74px;height:74px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center}
 .brand .logo-wrap img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px}
 .brand .logo-wrap svg{width:70px;height:70px}
@@ -39,7 +40,7 @@ input,select,textarea{font-family:inherit}
 .lh h2{font-size:22px;margin:0;color:var(--gold)}
 .lh .lh-sub{font-size:12px;color:var(--mut)}
 .lh .lh-meta{margin-left:auto;text-align:right;font-size:11px;color:var(--mut)}
-.nav{flex:1;padding:10px 8px;overflow-y:auto}
+.nav{flex:1 1 auto;min-height:0;padding:10px 8px;overflow-y:auto}
 .nav button{display:flex;align-items:center;gap:11px;width:100%;padding:11px 12px;background:transparent;color:var(--mut);border-radius:10px;font-size:14px;margin-bottom:3px;transition:.15s;text-align:left}
 .nav button:hover{background:var(--panel);color:var(--txt)}
 .nav button.on{background:linear-gradient(90deg,rgba(217,180,91,.18),transparent);color:var(--gold2);font-weight:600}
@@ -241,6 +242,29 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .login-card input{width:100%}
 .login-err{color:var(--red);font-size:12px;min-height:16px;margin:2px 0 4px;text-align:left}
 .login-card .btn{width:100%;justify-content:center;margin-top:6px}
+.login-card.wide{width:520px}
+/* Ojo de contraseña */
+.pw-wrap{position:relative}
+.pw-wrap input{width:100%;padding-right:40px}
+.pw-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:15px;padding:4px 6px;opacity:.7;cursor:pointer}
+.pw-eye:hover{opacity:1}
+/* Selector de perfiles */
+.pick-title{font-size:14px;color:var(--mut);margin-bottom:16px}
+.pick-grid{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
+.pick{width:104px;padding:16px 8px 12px;border-radius:16px;background:var(--panel);border:1px solid var(--line);cursor:pointer;transition:transform .2s cubic-bezier(.2,.8,.3,1),border-color .2s,box-shadow .2s;animation:popIn .5s both}
+.pick:nth-child(2){animation-delay:.06s}.pick:nth-child(3){animation-delay:.12s}.pick:nth-child(4){animation-delay:.18s}.pick:nth-child(5){animation-delay:.24s}.pick:nth-child(6){animation-delay:.3s}
+.pick:hover{transform:translateY(-7px) scale(1.04);border-color:var(--gold);box-shadow:0 16px 34px rgba(0,0,0,.45)}
+.pick .pav{position:relative;width:66px;height:66px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:27px;font-weight:800;color:#241c05;background:linear-gradient(135deg,var(--gold),var(--gold2))}
+.pick:hover .pav::after{content:'';position:absolute;inset:-5px;border-radius:50%;border:2px solid var(--gold);opacity:.6;animation:ringPulse 1.2s ease-in-out infinite}
+@keyframes ringPulse{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.08);opacity:.15}}
+.pick .pn{font-size:13px;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pick .pr{font-size:10px;color:var(--gold2);margin-top:2px}
+.pick.add{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.pick.add .pav{background:transparent;border:2px dashed var(--line);color:var(--gold2)}
+.pick.add:hover .pav{border-color:var(--gold)}
+.pw-step-av{width:78px;height:78px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;color:#241c05;background:linear-gradient(135deg,var(--gold),var(--gold2));animation:popIn .4s both}
+.login-back{background:none;border:none;color:var(--mut);font-size:12px;cursor:pointer;margin-top:12px}
+.login-back:hover{color:var(--gold2)}
 
 /* ---------- Recuadro de usuario ---------- */
 #userbox:empty{display:none}
@@ -357,7 +381,7 @@ if (!window.api) {
     exportSave:  (name, content) => { const b=new Blob([content],{type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name; a.click(); return name; },
     openBackups: () => alert('La carpeta de respaldos está disponible en la app de escritorio.'),
     paths:       () => ({ data:'(navegador)', backups:'(navegador)', adjuntos:'(navegador)' }),
-    version:     () => '1.5.0',
+    version:     () => '1.6.0',
     onUpdateStatus: () => {},
     updateInstall:  () => {},
     updateCheck:    () => {}
@@ -747,7 +771,7 @@ const TABS = [
   {k:'cfg',    i:'⚙️', t:'Configuración', admin:true}
 ];
 function buildNav(){
-  const tabs=TABS.filter(t=>!t.admin || isAdmin());
+  const tabs=TABS.filter(t=> t.admin ? isAdmin() : !isAdmin());
   $('#nav').innerHTML = tabs.map(t=>`<button data-k="${t.k}" class="${t.k===currentTab?'on':''}">
     <span class="ico">${t.i}</span><span>${t.t}</span><span class="badge" id="bdg-${t.k}" style="display:none"></span></button>`).join('');
   $('#nav').querySelectorAll('button').forEach(b=>b.onclick=()=>{ currentTab=b.dataset.k; buildNav(); render(); });
@@ -756,7 +780,7 @@ function buildNav(){
 function paintUserBox(){
   const b=$('#userbox'); if(!b)return; if(!session){ b.innerHTML=''; return; }
   const ini=(session.nombre||'?').trim().charAt(0).toUpperCase();
-  b.innerHTML=`<div class="av">${esc(ini)}</div><div><div class="un">${esc(session.nombre)}</div><div class="ur">${session.rol==='admin'?'Administrador':'Usuario'}</div></div><button class="lo" onclick="logout()">Salir</button>`;
+  b.innerHTML=`<div class="av">${esc(ini)}</div><div><div class="un">${esc(session.nombre)}</div><div class="ur">${roleLabel(session.rol)}</div></div><button class="lo" onclick="logout()">Salir</button>`;
 }
 function updateBadges(){
   const venc = allVencimientos().filter(v=>v.days!==null && v.days<=7).length;
@@ -770,7 +794,7 @@ function updateBadges(){
 // ============================================================================
 function render(){
   let tab = TABS.find(t=>t.k===currentTab);
-  if(!tab || (tab.admin && !isAdmin())){ currentTab='dash'; tab=TABS[0]; buildNav(); }
+  if(!tab || (tab.admin && !isAdmin()) || (!tab.admin && isAdmin())){ currentTab = isAdmin()?'plantillas':'dash'; tab=TABS.find(t=>t.k===currentTab); buildNav(); }
   $('#ttl').textContent = tab.t;
   const map = {dash:renderDash,casos:renderCasos,clientes:renderClientes,venc:renderVenc,record:renderRecord,fin:renderFin,leads:renderLeads,citas:renderCitas,renov:renderRenov,rep:renderRep,plantillas:renderPlantillas,usuarios:renderUsuarios,cfg:renderCfg};
   $('#tsub').textContent = subFor(currentTab);
@@ -1587,21 +1611,22 @@ function wipeData(){
 let session=null;
 function hashPass(s){ let h=5381; s=String(s); for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0; return 'h'+h.toString(36); }
 function isAdmin(){ return !!(session && session.rol==='admin'); }
-function showAuth(){ const l=$('#login'); l.classList.remove('hide'); l.style.display='flex'; if(!DB.usuarios.length) renderSetup(); else renderLogin(); }
-function renderLogin(){
-  $('#loginBody').innerHTML=`
-    <div class="fg"><label>Usuario</label><input id="loginUser"></div>
-    <div class="fg"><label>Contraseña</label><input id="loginPass" type="password"></div>
-    <div class="login-err" id="loginErr"></div>
-    <button class="btn gold" onclick="doLogin()">Ingresar</button>`;
-  setTimeout(()=>{ const u=$('#loginUser'),p=$('#loginPass'); if(u){u.focus();u.onkeydown=e=>{if(e.key==='Enter')p.focus();};} if(p)p.onkeydown=e=>{if(e.key==='Enter')doLogin();}; },60);
-}
+function loginCard(wide){ const c=document.querySelector('.login-card'); if(c)c.classList.toggle('wide',!!wide); }
+function avIni(n){ return (n||'?').trim().charAt(0).toUpperCase(); }
+function pwField(id,ph){ return `<div class="pw-wrap"><input id="${id}" type="password" placeholder="${esc(ph||'')}"><button type="button" class="pw-eye" onclick="togglePw('${id}',this)" title="Mostrar/ocultar">👁️</button></div>`; }
+function togglePw(id,btn){ const i=$('#'+id); if(!i)return; if(i.type==='password'){i.type='text';btn.textContent='🙈';}else{i.type='password';btn.textContent='👁️';} }
+function roleLabel(r){ return r==='admin'?'Administrador':'Asesor'; }
+
+function showAuth(){ const l=$('#login'); l.classList.remove('hide'); l.style.display='flex'; if(!DB.usuarios.length) renderSetup(); else renderPicker(); }
+
+// Primer arranque: crear administrador
 function renderSetup(){
+  loginCard(false);
   $('#loginBody').innerHTML=`
-    <p class="hint" style="margin-bottom:14px">Bienvenida 👋 Crea tu cuenta de <b>administrador</b> para empezar.</p>
+    <p class="hint" style="margin-bottom:14px">Bienvenida 👋 Crea tu cuenta de <b>administrador</b>.</p>
     <div class="fg"><label>Tu nombre</label><input id="suNombre"></div>
     <div class="fg"><label>Usuario</label><input id="suUser"></div>
-    <div class="fg"><label>Contraseña</label><input id="suPass" type="password"></div>
+    <div class="fg"><label>Contraseña</label>${pwField('suPass')}</div>
     <div class="login-err" id="loginErr"></div>
     <button class="btn gold" onclick="doSetup()">Crear cuenta</button>`;
   setTimeout(()=>{ const n=$('#suNombre'); if(n)n.focus(); },60);
@@ -1609,21 +1634,66 @@ function renderSetup(){
 function doSetup(){
   const nombre=$('#suNombre').value.trim(), user=$('#suUser').value.trim().toLowerCase(), pass=$('#suPass').value;
   if(!nombre||!user||!pass){ $('#loginErr').textContent='Completa todos los campos.'; return; }
-  const u={id:uid(),nombre,usuario:user,pass:hashPass(pass),rol:'admin',creado:today()};
-  DB.usuarios.push(u); save(); session=u; enterApp();
+  DB.usuarios.push({id:uid(),nombre,usuario:user,pass:hashPass(pass),rol:'admin',creado:today()}); save();
+  session=DB.usuarios[DB.usuarios.length-1]; enterApp();
 }
-function doLogin(){
-  const user=$('#loginUser').value.trim().toLowerCase(), pass=$('#loginPass').value;
-  const u=DB.usuarios.find(x=>x.usuario===user);
-  if(!u||u.pass!==hashPass(pass)){ $('#loginErr').textContent='Usuario o contraseña incorrectos.'; return; }
+
+// Selector de cuenta (perfiles)
+function renderPicker(){
+  loginCard(true);
+  const cards=DB.usuarios.map(u=>`<div class="pick" onclick="selectProfile('${u.id}')">
+    <div class="pav">${esc(avIni(u.nombre))}</div><div class="pn">${esc(u.nombre)}</div><div class="pr">${roleLabel(u.rol)}</div></div>`).join('');
+  $('#loginBody').innerHTML=`
+    <div class="pick-title">Elige tu cuenta para continuar</div>
+    <div class="pick-grid">${cards}
+      <div class="pick add" onclick="showAddAdvisor()"><div class="pav">＋</div><div class="pn">Agregar asesor</div><div class="pr">&nbsp;</div></div>
+    </div>`;
+}
+function selectProfile(id){
+  const u=DB.usuarios.find(x=>x.id===id); if(!u)return; loginCard(false);
+  $('#loginBody').innerHTML=`
+    <div class="pw-step-av">${esc(avIni(u.nombre))}</div>
+    <div style="font-weight:700;font-size:16px">${esc(u.nombre)}</div>
+    <div class="mini" style="margin-bottom:16px">${roleLabel(u.rol)}</div>
+    <div class="fg"><label>Contraseña</label>${pwField('loginPass')}</div>
+    <div class="login-err" id="loginErr"></div>
+    <button class="btn gold" onclick="doLogin('${id}')">Ingresar</button>
+    <button class="login-back" onclick="renderPicker()">← Elegir otra cuenta</button>`;
+  setTimeout(()=>{ const p=$('#loginPass'); if(p){ p.focus(); p.onkeydown=e=>{ if(e.key==='Enter') doLogin(id); }; } },60);
+}
+function doLogin(id){
+  const u=DB.usuarios.find(x=>x.id===id); const pass=$('#loginPass').value;
+  if(!u||u.pass!==hashPass(pass)){ $('#loginErr').textContent='Contraseña incorrecta.'; return; }
   session=u; enterApp();
+}
+// Agregar asesor desde el inicio (requiere clave de administrador)
+function showAddAdvisor(){
+  loginCard(false);
+  $('#loginBody').innerHTML=`
+    <p class="hint" style="margin-bottom:14px">Nuevo <b>asesor</b>. Requiere la contraseña del administrador.</p>
+    <div class="fg"><label>Nombre del asesor</label><input id="aaNombre"></div>
+    <div class="fg"><label>Usuario</label><input id="aaUser"></div>
+    <div class="fg"><label>Contraseña del asesor</label>${pwField('aaPass')}</div>
+    <div class="fg"><label>Contraseña de administrador</label>${pwField('aaAdmin')}</div>
+    <div class="login-err" id="loginErr"></div>
+    <button class="btn gold" onclick="doAddAdvisor()">Crear asesor</button>
+    <button class="login-back" onclick="renderPicker()">← Volver</button>`;
+  setTimeout(()=>{ const n=$('#aaNombre'); if(n)n.focus(); },60);
+}
+function doAddAdvisor(){
+  const nombre=$('#aaNombre').value.trim(), user=$('#aaUser').value.trim().toLowerCase(), pass=$('#aaPass').value, adminPass=$('#aaAdmin').value;
+  if(!nombre||!user||!pass){ $('#loginErr').textContent='Completa los datos del asesor.'; return; }
+  if(!DB.usuarios.some(u=>u.rol==='admin'&&u.pass===hashPass(adminPass))){ $('#loginErr').textContent='Contraseña de administrador incorrecta.'; return; }
+  if(DB.usuarios.some(u=>u.usuario===user)){ $('#loginErr').textContent='Ese usuario ya existe.'; return; }
+  DB.usuarios.push({id:uid(),nombre,usuario:user,pass:hashPass(pass),rol:'asesor',creado:today()}); save();
+  toast('Asesor agregado ✓'); renderPicker();
 }
 function enterApp(){
   const l=$('#login'); l.classList.add('hide'); setTimeout(()=>{ l.style.display='none'; },420);
-  currentTab='dash'; buildNav(); render();
+  currentTab = isAdmin() ? 'plantillas' : 'dash'; buildNav(); render();
   toast('Bienvenido/a, '+session.nombre+' 👋');
 }
-function logout(){ session=null; currentTab='dash'; closeModal(); showAuth(); }
+function logout(){ session=null; closeModal(); showAuth(); }
 
 // ============================================================================
 //  PLANTILLAS (solo administrador)
@@ -1667,22 +1737,22 @@ function renderUsuarios(){
     ${DB.usuarios.map(u=>`<tr>
       <td><b>${esc(u.nombre)}</b>${u.id===session.id?' <span class="tag t-blue">tú</span>':''}</td>
       <td class="mini">${esc(u.usuario)}</td>
-      <td><span class="tag ${u.rol==='admin'?'t-amber':'t-gray'}">${u.rol==='admin'?'Administrador':'Usuario'}</span></td>
+      <td><span class="tag ${u.rol==='admin'?'t-amber':'t-gray'}">${roleLabel(u.rol)}</span></td>
       <td class="tbl-actions">
         <button class="iconbtn" onclick="openUsuario('${u.id}')">✏️</button>
         ${u.id!==session.id?`<button class="iconbtn" onclick="delUsuario('${u.id}')">🗑️</button>`:''}
       </td></tr>`).join('')}
     </tbody></table>
-    <p class="hint" style="margin-top:10px">El <b>Administrador</b> edita plantillas, la marca y gestiona usuarios. El <b>Usuario</b> gestiona clientes, casos y documentos con las plantillas ya definidas, sin poder cambiarlas.</p></div>`;
+    <p class="hint" style="margin-top:10px">El <b>Administrador</b> gestiona plantillas, la marca y los usuarios. El <b>Asesor</b> gestiona clientes, casos y documentos con las plantillas ya definidas, sin poder cambiarlas.</p></div>`;
 }
 function openUsuario(id){
-  const u=id?DB.usuarios.find(x=>x.id===id):{rol:'usuario'};
+  const u=id?DB.usuarios.find(x=>x.id===id):{rol:'asesor'};
   modal(`<div class="mh"><h3>${id?'Editar':'Nuevo'} usuario</h3><button class="x" onclick="closeModal()">✕</button></div>
   <div class="mb">
     <div class="fg"><label>Nombre</label><input id="uNombre" value="${esc(u.nombre||'')}"></div>
     <div class="fg"><label>Usuario (para iniciar sesión)</label><input id="uUser" value="${esc(u.usuario||'')}"></div>
-    <div class="fg"><label>Contraseña ${id?'<span class="mini">(dejar en blanco para no cambiar)</span>':''}</label><input id="uPass" type="password"></div>
-    <div class="fg"><label>Rol</label><select id="uRol" ${id&&id===session.id?'disabled':''}>${['usuario','admin'].map(r=>`<option value="${r}" ${u.rol===r?'selected':''}>${r==='admin'?'Administrador':'Usuario'}</option>`).join('')}</select></div>
+    <div class="fg"><label>Contraseña ${id?'<span class="mini">(dejar en blanco para no cambiar)</span>':''}</label>${pwField('uPass')}</div>
+    <div class="fg"><label>Rol</label><select id="uRol" ${id&&id===session.id?'disabled':''}>${['asesor','admin'].map(r=>`<option value="${r}" ${u.rol===r?'selected':''}>${roleLabel(r)}</option>`).join('')}</select></div>
   </div>
   <div class="mf"><button class="btn ghost" onclick="closeModal()">Cancelar</button><button class="btn gold" onclick="saveUsuario('${id||''}')">Guardar</button></div>`);
 }
