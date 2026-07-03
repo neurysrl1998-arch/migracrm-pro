@@ -206,6 +206,11 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .log-item .t{font-size:11px;color:var(--mut2)}
 .letter-btn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:13px 15px}
 .letter-btn small{font-weight:400;color:var(--mut);font-size:11px}
+/* Vista previa de documento (hoja blanca dentro de la app) */
+.doc-preview{background:#fff;box-shadow:0 8px 34px rgba(0,0,0,.45);border-radius:4px;max-width:760px;margin:0 auto;min-height:400px}
+.doc-preview .doc-sheet{outline:none}
+.doc-preview .doc-sheet:focus{outline:none}
+.doc-editnote{color:#cdd3e0;font-size:12px;text-align:center;margin-bottom:12px}
 /* Documento imprimible */
 #printdoc{display:none}
 .doc-sheet{font-family:'Georgia',serif;color:#111;max-width:800px;margin:0 auto;padding:30px 40px;line-height:1.6}
@@ -287,7 +292,7 @@ if (!window.api) {
     exportSave:  (name, content) => { const b=new Blob([content],{type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name; a.click(); return name; },
     openBackups: () => alert('La carpeta de respaldos está disponible en la app de escritorio.'),
     paths:       () => ({ data:'(navegador)', backups:'(navegador)', adjuntos:'(navegador)' }),
-    version:     () => '1.2.0',
+    version:     () => '1.3.0',
     onUpdateStatus: () => {},
     updateInstall:  () => {},
     updateCheck:    () => {}
@@ -431,6 +436,19 @@ function printSheet(inner){
   window.onafterprint=()=>{ document.body.classList.remove('printdoc-mode'); $('#printdoc').innerHTML=''; window.onafterprint=null; };
   setTimeout(()=>{ try{ window.print(); }catch(e){} }, 80);
 }
+// Vista previa profesional antes de descargar/imprimir (editable en vivo)
+function previewDoc(inner,title){
+  modal(`<div class="mh"><h3>👁️ ${esc(title||'Vista previa del documento')}</h3><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="mb" style="background:#525659;padding:20px">
+    <div class="doc-editnote">✏️ Vista previa exacta del PDF. Puedes editar el texto aquí antes de generarlo.</div>
+    <div class="doc-preview"><div class="doc-sheet" id="docEditable" contenteditable="true">${inner}</div></div>
+  </div>
+  <div class="mf">
+    <button class="btn ghost" onclick="closeModal()">Cerrar</button>
+    <button class="btn gold" onclick="printCurrentDoc()">🖨️ Descargar / Imprimir PDF</button>
+  </div>`, true);
+}
+function printCurrentDoc(){ const el=$('#docEditable'); if(el) printSheet(el.innerHTML); }
 function docLogo(){ const d=DB.meta.asesor.logoData; return `<div class="dl">${d?`<img src="${d}">`:DEFAULT_LOGO_SVG}</div>`; }
 function docHeader(){ const a=DB.meta.asesor; return `<div class="dh">${docLogo()}<div><h1>${esc(a.oficina||'MG Legal & Migration')}</h1><div class="ds">Asesoría legal y migratoria${a.telefono?' · Tel: '+esc(a.telefono):''}${a.correo?' · '+esc(a.correo):''}</div></div></div>`; }
 function docSign(){ const a=DB.meta.asesor; return `<div class="sign"><div class="line">${esc(a.nombre||'____________________')}<br>${esc(a.oficina||'MG Legal & Migration')}</div></div>`; }
@@ -452,7 +470,7 @@ function genLetter(kind,casoId){
     <p><b>QUINTO — Confidencialidad.</b> La Firma protegerá los datos del Cliente.</p>
     <p>En señal de conformidad, ambas partes firman:</p>
     <table style="margin-top:40px"><tr><td style="border:none;text-align:center">_______________________<br>La Firma</td><td style="border:none;text-align:center">_______________________<br>${nom}</td></tr></table>`;
-    printSheet(`${H}<h2>${t}</h2>${b}`); return;
+    previewDoc(`${H}<h2>${t}</h2>${b}`,'Contrato de servicios'); return;
   }
   if(kind==='cover'){ t='Carta de Presentación (Cover Letter)';
     b=`<p>A quien corresponda / Sección Consular:</p>
@@ -482,7 +500,7 @@ function genLetter(kind,casoId){
     <p>Esta autorización incluye la entrega y recepción de documentos relacionados con el expediente.</p>`;
   }
   else { t='Documento'; b='<p>—</p>'; }
-  printSheet(`${H}<h2>${t}</h2>${b}${docSign()}`);
+  previewDoc(`${H}<h2>${t}</h2>${b}${docSign()}`,t);
 }
 
 async function expedienteMaestro(casoId){
@@ -511,14 +529,14 @@ async function expedienteMaestro(casoId){
   let imgs='';
   for(const at of atts){ try{ const f=await window.api.fileDataUrl(at.stored); if(f&&f.isImage) imgs+=`<div class="pagebreak"><h2>${esc(at.name)}</h2><img class="imgdoc" src="${f.dataUrl}"></div>`; }catch(e){} }
   if(!imgs&&atts.length) imgs=`<div class="pagebreak"><h2>Adjuntos</h2><p>${atts.map(a=>esc(a.name)).join('<br>')}</p></div>`;
-  printSheet(cover+chk+imgs);
+  previewDoc(cover+chk+imgs,'Expediente maestro');
 }
 function printEntrevista(casoId){
   const c=DB.casos.find(x=>x.id===casoId); const cli=DB.clientes.find(x=>x.id===c.clienteId)||{};
   const qs=INTERVIEW[c.tipo]||INTERVIEW['_'];
-  printSheet(`${docHeader()}<h2>Simulacro de Entrevista Consular — ${esc(c.tipo)}</h2>
+  previewDoc(`${docHeader()}<h2>Simulacro de Entrevista Consular — ${esc(c.tipo)}</h2>
     <p><b>Cliente:</b> ${esc(cli.nombre||'')}</p>
-    <ol>${qs.map(q=>`<li style="margin-bottom:14px">${esc(q)}<br><span style="color:#999">Respuesta: ____________________________________________</span></li>`).join('')}</ol>`);
+    <ol>${qs.map(q=>`<li style="margin-bottom:14px">${esc(q)}<br><span style="color:#999">Respuesta: ____________________________________________</span></li>`).join('')}</ol>`,'Simulacro de entrevista');
 }
 
 // -------- Bitácora (inmutable) --------
